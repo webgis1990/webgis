@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Peta Prioritas Aset Tanah Kota Surabayas</title>
+<title>Peta Prioritas Aset Tanah Kota Surabaya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -153,6 +153,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
   .brand span{display:none}
 }
 @media (prefers-reduced-motion:reduce){.reveal{animation:none}}
+.extmsg{font-size:12px;color:#b3261e;margin:0 0 4px 24px}.side input[type=range]{width:calc(100% - 24px);margin:0 0 8px 24px}
 </style>
 </head>
 <body>
@@ -242,6 +243,10 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
         <legend>Penanda titik</legend>
         <label><input type="checkbox" id="togglePins" checked> Tampilkan titik di tiap bidang</label>
       </fieldset>
+      <fieldset>
+        <legend>Lapisan tambahan</legend>
+        <div id="extToggles"></div>
+      </fieldset>
       <h2 style="margin-top:6px">Aset</h2>
       <ul class="assetlist" id="assetlist"></ul>
     </aside>
@@ -280,6 +285,11 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
       <h3 style="margin:36px 0 8px;font-size:20px">Bobot kriteria</h3>
       <div class="formula">Skor akhir = Σ (bobot × skor kriteria)</div>
       <div class="card" id="weights"></div>
+
+      <h3 style="margin:36px 0 8px;font-size:20px">Perhitungan AHP</h3>
+      <p class="sub" style="margin-bottom:14px">Penilaian lima responden digabung dengan rata-rata geometrik, lalu dihitung bobot dan uji konsistensinya.</p>
+      <div class="card" id="ahpCalc"></div>
+      <p style="margin-top:14px"><a class="btn btn-primary" href="data/AHP_BOBOT_revisi.xlsx" download>Unduh perhitungan AHP (Excel)</a></p>
 
       <h3 style="margin:36px 0 8px;font-size:20px">Kelas prioritas dan rekomendasi</h3>
       <p class="sub" style="margin-bottom:14px">Rentang skor di bawah ini diambil dari hasil perhitungan 15 bidang aset.</p>
@@ -453,7 +463,71 @@ function initMap(){
     <li><button data-id="${p.ID}"><span class="n k${p.KELAS}">${p.RANGKING}</span>
     <span class="t">${esc(jenisShort(p.JENIS))}<span>${titleCase(p.KELURAHAN)} · ${fmt(p.SKOR_AKHIR,2)}</span></span></button></li>`}).join("");
   document.querySelectorAll("#assetlist button").forEach(b=>b.onclick=()=>focusAsset(+b.dataset.id));
+  initExt();
 }
+/* ===== LAPISAN TAMBAHAN (centang untuk menghidupkan) =====
+   Tambah lapisan baru cukup dengan menambah satu objek di EXT_LAYERS.
+   file  : path GeoJSON (relatif terhadap HTML ini), atau pakai data:{...} untuk embed langsung
+   field : kolom atribut untuk pewarnaan; classes boleh dikosongkan -> warna dibuat otomatis
+   Koordinat boleh WGS84 atau UTM 49S (dikenali & dikonversi otomatis).                    */
+const EXT_LAYERS=[
+ {id:"akses",nama:"Peta aksesibilitas (jarak jalan arteri)",file:"data/aksesibilitas.geojson",field:"Skor",opacity:.65,
+  classes:[{v:5,c:"#1a9850",l:"Skor 5: < 200 m"},{v:4,c:"#91cf60",l:"Skor 4: 200–499 m"},{v:3,c:"#ffffbf",l:"Skor 3: 500–799 m"},{v:2,c:"#fc8d59",l:"Skor 2: 800–1.000 m"},{v:1,c:"#d73027",l:"Skor 1: > 1.000 m"}]},
+ {id:"njop",nama:"Peta NJOP (skor per bidang aset)",file:"data/njop.geojson",field:"skor_njop",opacity:.85,
+  classes:[{v:5,c:"#08306b",l:"Skor 5: > Rp15 jt/m²"},{v:4,c:"#2171b5",l:"Skor 4: Rp7–15 jt"},{v:3,c:"#6baed6",l:"Skor 3: Rp3–7 jt"},{v:2,c:"#c6dbef",l:"Skor 2: Rp1–3 jt"},{v:1,c:"#f7fbff",l:"Skor 1: < Rp1 jt"}]},
+ {id:"rdtr",nama:"Peta RDTR (pola ruang)",file:"data/rdtr.geojson",field:"KELAS",colorField:"WARNA",opacity:.6},
+ {id:"guna",nama:"Peta penggunaan lahan",file:"data/penggunaan_lahan.geojson",field:"Jenis",opacity:.7,
+  classes:[{v:"Rumah",c:"#ff7d7d",l:"Rumah"},{v:"Perdagangan",c:"#d6479a",l:"Perdagangan"},{v:"Jalan",c:"#ea1e1d",l:"Jalan"},{v:"Saluran",c:"#00f0fa",l:"Saluran"},{v:"Sungai",c:"#99d9f9",l:"Sungai"},{v:"Perairan",c:"#bfeaff",l:"Perairan"},{v:"KH",c:"#4ce600",l:"KH"},{v:"PB, PS, RTH",c:"#a8d08d",l:"PB, PS, RTH"},{v:"Kantor Pemerintah",c:"#ffff00",l:"Kantor Pemerintah"},{v:"Aneka Industri",c:"#85629b",l:"Aneka Industri"},{v:"Sarana Pelayanan umum",c:"#ff8c1a",l:"Sarana Pelayanan umum"}]},
+ {id:"legal",nama:"Peta status legalitas tanah aset",file:"data/legalitas.geojson",field:"STATUS",opacity:.85,
+  classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]}
+];
+const EXT_PAL=["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac"];
+const extState={};let extRend;
+function utmInv(x,y){const a=6378137,e2=0.00669437999014,ep=e2/(1-e2),k=0.9996;x-=5e5;y-=1e7;
+ const mu=(y/k)/(a*(1-e2/4-3*e2*e2/64-5*e2**3/256)),s1=Math.sqrt(1-e2),e1=(1-s1)/(1+s1);
+ const p=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1*e1/16-55*e1**4/32)*Math.sin(4*mu)+151*e1**3/96*Math.sin(6*mu)+1097*e1**4/512*Math.sin(8*mu);
+ const s=Math.sin(p),c=Math.cos(p),t=Math.tan(p),C=ep*c*c,T=t*t,N=a/Math.sqrt(1-e2*s*s),R=a*(1-e2)/Math.pow(1-e2*s*s,1.5),D=x/(N*k);
+ const lat=p-(N*t/R)*(D*D/2-(5+3*T+10*C-4*C*C-9*ep)*D**4/24+(61+90*T+298*C+45*T*T-252*ep-3*C*C)*D**6/720);
+ const lon=(D-(1+2*T+C)*D**3/6+(5-2*C+28*T-3*C*C+8*ep+24*T*T)*D**5/120)/c;
+ return [lon*180/Math.PI+111,lat*180/Math.PI];}
+function toWGS(c){return typeof c[0]==="number"?(Math.abs(c[0])>360?utmInv(c[0],c[1]):c):c.map(toWGS)}
+async function loadExt(cfg){
+ if(extState[cfg.id]) return extState[cfg.id];
+ let d=cfg.data; if(!d){const r=await fetch(cfg.file); if(!r.ok) throw new Error(r.status); d=await r.json();}
+ d={type:"FeatureCollection",features:d.features.filter(f=>f.geometry).map(f=>({type:"Feature",properties:f.properties||{},geometry:{type:f.geometry.type,coordinates:toWGS(f.geometry.coordinates)}}))};
+ let cls=cfg.classes;
+ if(!cls&&cfg.field){const u=[...new Set(d.features.map(f=>f.properties[cfg.field]))].filter(v=>v!=null).sort();cls=u.map((v,i)=>({v,c:EXT_PAL[i%EXT_PAL.length],l:String(v)}));}
+ if(!cls&&cfg.colorField){const m=new Map();d.features.forEach(f=>m.set(f.properties[cfg.field],f.properties[cfg.colorField]));cls=[...m].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))).map(([v,c])=>({v,c,l:String(v)}));}
+ cls=cls||[];
+ const col=p=>{const k=cls.find(x=>x.v==p[cfg.field]);return k?k.c:"#9aa5b1"};
+ const lyr=L.geoJSON(d,{pane:"ext",renderer:extRend,style:f=>({color:"#444",weight:.5,fillColor:col(f.properties),fillOpacity:cfg.opacity??.6}),
+  onEachFeature:(f,l)=>l.on("click",ev=>{const hide=["WARNA","KODE"];
+   L.popup({maxWidth:300}).setLatLng(ev.latlng).setContent("<b>"+esc(cfg.nama)+"</b><br>"+Object.entries(f.properties).filter(([k,v])=>v!=null&&v!==""&&!hide.includes(k)).slice(0,12).map(([k,v])=>esc(k)+": "+esc(String(v))).join("<br>")).openOn(map)})});
+ return extState[cfg.id]={lyr,cls};
+}
+function extLegend(){
+ const el=document.getElementById("extLegend");const on=EXT_LAYERS.filter(c=>extState[c.id]&&map.hasLayer(extState[c.id].lyr));
+ el.hidden=!on.length;
+ el.innerHTML=on.map(c=>"<b>"+esc(c.nama)+"</b><br>"+extState[c.id].cls.map(k=>`<i class="dot" style="background:${esc(k.c)}"></i>${esc(k.l)}`).join("<br>")).join("<hr style='margin:6px 0;border:0;border-top:1px solid #ddd'>");
+}
+function initExt(){
+ map.createPane("ext").style.zIndex=350;extRend=L.canvas({pane:"ext"});
+ const lg=L.control({position:"bottomleft"});
+ lg.onAdd=()=>{const d=L.DomUtil.create("div","legend");d.id="extLegend";d.hidden=true;d.style.maxHeight="45vh";d.style.overflow="auto";return d};lg.addTo(map);
+ const box=document.getElementById("extToggles");
+ EXT_LAYERS.forEach(cfg=>{
+  const w=document.createElement("div");
+  w.innerHTML=`<label><input type="checkbox"> ${esc(cfg.nama)}</label><div class="extmsg" hidden></div><input type="range" min="10" max="100" value="${(cfg.opacity??.6)*100}" hidden aria-label="Transparansi">`;
+  box.append(w);
+  const cb=w.querySelector("input"),msg=w.querySelector(".extmsg"),rg=w.querySelector("input[type=range]");
+  cb.onchange=async()=>{msg.hidden=true;
+   if(!cb.checked){const s=extState[cfg.id];if(s)map.removeLayer(s.lyr);rg.hidden=true;extLegend();return}
+   try{const s=await loadExt(cfg);s.lyr.addTo(map);rg.hidden=false;extLegend()}
+   catch(e){cb.checked=false;msg.textContent="Data belum tersedia ("+cfg.file+"). Buka lewat server/hosting, bukan file langsung.";msg.hidden=false}};
+  rg.oninput=()=>{const s=extState[cfg.id];if(s)s.lyr.setStyle({fillOpacity:rg.value/100})};
+ });
+}
+
 function focusAsset(id){
   const l=layerById[id]; if(!l) return;
   map.flyToBounds(l.bounds.pad(2.5),{maxZoom:18,duration:.8});
@@ -485,7 +559,23 @@ function buildTable(){
 }
 
 /* ---------- metodologi ---------- */
+function buildAHP(){
+  const A={"names": ["Legalitas", "NJOP", "Aksesibilitas", "Kesesuaian tata ruang", "Penggunaan lahan"], "G": [[1.0, 3.3197, 1.3933, 3.0863, 5.0857], [0.3012, 1.0, 0.5569, 0.2144, 1.7726], [0.7177, 1.7956, 1.0, 1.0, 1.8882], [0.324, 4.6632, 1.0, 1.0, 3.7953], [0.1966, 0.5641, 0.5296, 0.2635, 1.0]], "W": [0.3855, 0.1001, 0.1967, 0.2444, 0.0733], "lmax": 5.2615, "ci": 0.0654, "cr": 0.0584, "resp": [{"w": [0.5272, 0.1331, 0.1522, 0.154, 0.0337], "cr": 0.343}, {"w": [0.4146, 0.0983, 0.0618, 0.2088, 0.2164], "cr": 0.044}, {"w": [0.4648, 0.0678, 0.2643, 0.1608, 0.0423], "cr": 0.121}, {"w": [0.224, 0.0343, 0.26, 0.4198, 0.062], "cr": 0.25}, {"w": [0.2533, 0.1884, 0.2589, 0.222, 0.0774], "cr": 1.007}]}, f=(x,d)=>x.toLocaleString("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d});
+  const th=A.names.map(n=>`<th class="num">${esc(n)}</th>`).join("");
+  const mrows=A.G.map((r,i)=>`<tr><td>${esc(A.names[i])}</td>${r.map(v=>`<td class="num">${f(v,3)}</td>`).join("")}<td class="num"><b>${f(A.W[i]*100,2)}%</b></td></tr>`).join("");
+  const ok=A.cr<0.1;
+  const rrows=A.resp.map((r,i)=>`<tr><td>Responden ${i+1}</td>${r.w.map(v=>`<td class="num">${f(v*100,1)}%</td>`).join("")}<td class="num">${f(r.cr,3)}</td><td>${r.cr<0.1?"konsisten":"CR &gt; 0,1"}</td></tr>`).join("");
+  document.getElementById("ahpCalc").innerHTML=`
+    <p style="margin:0 0 8px"><b>Matriks perbandingan gabungan</b> (rata-rata geometrik 5 responden)</p>
+    <div class="tablewrap"><table class="data"><thead><tr><th>Kriteria</th>${th}<th class="num">Bobot</th></tr></thead><tbody>${mrows}</tbody></table></div>
+    <p style="margin:16px 0 6px"><b>Uji konsistensi gabungan</b></p>
+    <p style="margin:0">λ maks = ${f(A.lmax,3)} · CI = ${f(A.ci,3)} · RI (n=5) = 1,12 · <b>CR = ${f(A.cr,3)}</b> ${ok?"(konsisten, CR &lt; 0,1)":"(tidak konsisten)"}</p>
+    <p style="margin:16px 0 6px"><b>Bobot dan konsistensi per responden</b></p>
+    <div class="tablewrap"><table class="data"><thead><tr><th></th>${th}<th class="num">CR</th><th>Keterangan</th></tr></thead><tbody>${rrows}</tbody></table></div>
+    <p style="font-size:13px;color:#4A5E73;margin:10px 0 0">Bobot akhir memakai matriks gabungan. Konsistensi diuji pada hasil gabungan.</p>`;
+}
 function buildMethod(){
+  buildAHP();
   const p0=P(feats[0]);
   document.getElementById("weights").innerHTML = CRITERIA.map(c=>{const w=p0["BOBOT_"+c.k]*100;return `
     <div class="wbar"><span>${c.name}</span><div class="track"><div class="fill" style="width:${w/0.4}%"></div></div><b>${fmt(w,1)}%</b></div>`}).join("")
