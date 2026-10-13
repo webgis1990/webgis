@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peta Prioritas Aset Tanah Kota Surabaya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+:root{
+  --ink:#10243B; --ink-soft:#4A5E73; --paper:#F4F7FA; --card:#FFFFFF; --line:#D5DEE6;
+  --navy:#0F2A44; --blue:#0B5CAD; --blue-dark:#084884;
+  --c5:#9B1C2E; --c4:#E4572E; --c3:#F2B134; --c2:#8CC152; --c1:#2E8B57;
+  --font-head:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --font-body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --nav-h:64px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:var(--font-body);color:var(--ink);background:var(--paper);line-height:1.6;font-size:16px}
+h1,h2,h3{font-family:var(--font-head);line-height:1.15;margin:0}
+a{color:var(--blue)}
+:focus-visible{outline:3px solid #F2B134;outline-offset:2px}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:1000;height:var(--nav-h);background:#fff;border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:20px;height:100%}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--font-head);font-weight:700;font-size:17px;white-space:nowrap}
+.brand svg{flex:none}
+.nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto}
+.nav-links a{padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--ink-soft);font-weight:500;font-size:15px;white-space:nowrap}
+.nav-links a:hover{background:var(--paper);color:var(--ink)}
+.nav-links a[aria-current="page"]{background:#E1ECF8;color:var(--blue-dark)}
+.btn{display:inline-block;border:0;border-radius:999px;padding:11px 22px;font-weight:600;font-size:15px;text-decoration:none;text-align:center}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:var(--blue-dark)}
+.btn-ghost{background:#fff;color:var(--blue-dark)}
+.btn-ghost:hover{background:#E1ECF8}
+.nav .btn{padding:9px 18px}
+
+/* hero */
+.hero{background:var(--navy);color:#fff;padding:64px 0 72px}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:48px;align-items:center}
+.badge{display:inline-block;background:#173B5E;color:#BFD8F2;border-radius:999px;padding:5px 14px;font-size:13px;font-weight:500;margin-bottom:20px}
+.hero h1{font-size:clamp(32px,4.4vw,52px);font-weight:700;letter-spacing:-.01em;max-width:16em}
+.hero p.lead{color:#C9D9EA;font-size:18px;max-width:34em;margin:20px 0 28px}
+.hero .actions{display:flex;gap:12px;flex-wrap:wrap}
+.tiles-card{background:#173B5E;border-radius:16px;padding:20px}
+.tiles-card h2{font-size:17px;font-weight:500;color:#DCE8F5;margin-bottom:14px}
+.tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.tile{background:#0F2A44;border:1px solid #2A5078;border-radius:10px;padding:6px 6px 8px;color:#fff;text-align:center;cursor:pointer;font:inherit}
+.tile:hover{border-color:#fff}
+.tile svg{display:block;width:100%;height:auto;aspect-ratio:1}
+.tile .rk{display:block;font-size:12px;color:#BFD8F2;margin-top:2px}
+.tiles-note{font-size:13px;color:#A9C2DC;margin:12px 0 0}
+.reveal{animation:rise .7s ease-out both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* sections */
+.section{padding:56px 0}
+.section h2{font-size:clamp(24px,3vw,32px);margin-bottom:8px}
+.section .sub{color:var(--ink-soft);max-width:44em;margin:0 0 28px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px}
+.dist{display:flex;height:44px;border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.dist div{display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px}
+.dist-legend{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:14px;font-size:14px;color:var(--ink-soft)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.stat b{display:block;font-family:var(--font-head);font-size:28px}
+.stat span{color:var(--ink-soft);font-size:14px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.toplist{list-style:none;margin:0;padding:0}
+.toplist li{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.toplist li:last-child{border:0}
+.toplist .n{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:14px}
+.toplist .t{flex:1;min-width:0}
+.toplist .t b{display:block}
+.toplist .t span{font-size:14px;color:var(--ink-soft)}
+.toplist button{background:none;border:0;color:var(--blue);font-weight:600;font-size:14px;padding:6px}
+
+/* badges */
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.k5{background:var(--c5);color:#fff}.k4{background:var(--c4);color:#fff}.k3{background:var(--c3);color:#3a2a00}.k2{background:var(--c2);color:#1d3300}.k1{background:var(--c1);color:#fff}
+
+/* map page */
+.mapview{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - var(--nav-h))}
+.side{background:#fff;border-right:1px solid var(--line);overflow-y:auto;padding:18px}
+.side h2{font-size:18px;margin:0 0 10px}
+.side fieldset{border:0;padding:0;margin:0 0 18px}
+.side legend{font-weight:600;font-size:14px;margin-bottom:6px;padding:0}
+.side label{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:14px;cursor:pointer}
+.side input{accent-color:var(--blue)}
+.assetlist{list-style:none;margin:0;padding:0}
+.assetlist li button{width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:9px 4px;display:flex;gap:10px;align-items:center}
+.assetlist li button:hover{background:var(--paper)}
+.assetlist .n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600}
+.assetlist .t{font-size:14px;line-height:1.3}
+.assetlist .t span{display:block;color:var(--ink-soft);font-size:12px}
+#map{height:100%;width:100%;background:#dfe7ee}
+.legend{background:#fff;padding:10px 12px;border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,.25);font-size:13px;line-height:1.7}
+.leaflet-popup-content{margin:14px 16px;width:300px !important;font-family:var(--font-body)}
+.pop h3{font-size:17px;margin:4px 0 2px}
+.pop .loc{color:var(--ink-soft);font-size:13px;margin-bottom:8px}
+.pop .score{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.pop .score b{font-family:var(--font-head);font-size:26px}
+.pop table{width:100%;border-collapse:collapse;font-size:12.5px}
+.pop td{padding:4px 0;border-top:1px solid var(--line);vertical-align:top}
+.pop td:last-child{text-align:right;white-space:nowrap;padding-left:8px;font-weight:600}
+.pop .rec{background:var(--paper);border-radius:8px;padding:9px 11px;margin-top:10px;font-size:13px}
+.pop .rec b{display:block;margin-bottom:2px}
+.pop .warn{font-size:12px;color:#7a4b00;background:#FFF3D6;border-radius:6px;padding:6px 8px;margin-top:8px}
+
+/* table page */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff}
+table.data{width:100%;border-collapse:collapse;font-size:14.5px}
+table.data th,table.data td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+table.data th{background:#EAF0F6;font-weight:600;position:sticky;top:0}
+table.data th button{background:none;border:0;font:inherit;font-weight:600;padding:0;color:inherit}
+table.data td.num,table.data th.num{text-align:right}
+table.data tr:last-child td{border:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.linkbtn{background:none;border:0;color:var(--blue);font-weight:600;font-size:14px;padding:0}
+
+/* method */
+.wbar{display:grid;grid-template-columns:200px 1fr 60px;gap:12px;align-items:center;margin:10px 0;font-size:15px}
+.wbar .track{background:#E4ECF3;border-radius:6px;height:18px;overflow:hidden}
+.wbar .fill{height:100%;background:var(--blue)}
+.wbar b{text-align:right}
+.formula{font-family:var(--font-head);font-size:20px;background:#E9F1FA;border-radius:10px;padding:14px 18px;display:inline-block;margin:6px 0 14px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.steps li{counter-increment:s;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:14px}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-weight:600;font-size:13px;margin-bottom:8px}
+.steps b{display:block;font-size:15px;margin-bottom:2px}
+.note{background:#FFF3D6;border-radius:10px;padding:14px 16px;font-size:14.5px}
+footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var(--ink-soft);font-size:14px}
+
+@media (max-width:900px){
+  .hero .wrap,.split{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .stats{grid-template-columns:1fr}
+  .mapview{grid-template-columns:1fr;grid-template-rows:55vh auto;height:auto}
+  .mapview #map{order:-1;height:55vh}
+  .side{border-right:0;max-height:none}
+  .wbar{grid-template-columns:1fr 60px}
+  .wbar .track{grid-column:1 / -1;order:3}
+  .nav .btn{display:none}
+  .brand span{display:none}
+}
+@media (prefers-reduced-motion:reduce){.reveal{animation:none}}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#/beranda" aria-label="Beranda">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#0B5CAD"/><path d="M8 20l4-9 5 5 5-8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="22" cy="8" r="2.2" fill="#F2B134"/></svg>
+      <span>Prioritas Aset Tanah Surabaya</span>
+    </a>
+    <nav class="nav-links" aria-label="Menu utama">
+      <a href="#/beranda" data-nav="beranda">Beranda</a>
+      <a href="#/peta" data-nav="peta">Peta</a>
+      <a href="#/daftar" data-nav="daftar">Daftar aset</a>
+      <a href="#/metodologi" data-nav="metodologi">Metodologi</a>
+      <a href="#/tentang" data-nav="tentang">Tentang</a>
+    </nav>
+    <a class="btn btn-primary" href="#/peta">Buka peta</a>
+  </div>
+</header>
+
+<main>
+<!-- BERANDA -->
+<section data-page="beranda">
+  <div class="hero">
+    <div class="wrap">
+      <div class="reveal">
+        <span class="badge">Penelitian tugas akhir Teknik Geomatika ITS</span>
+        <h1>Aset tanah Pemkot Surabaya mana yang perlu ditangani lebih dulu?</h1>
+        <p class="lead">15 bidang aset dinilai dengan AHP dan weighted overlay pada lima kriteria, lalu dikelompokkan ke lima kelas prioritas. Klik bidang di peta untuk melihat skor dan rekomendasinya.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#/peta">Buka peta interaktif</a>
+          <a class="btn btn-ghost" href="#/daftar">Lihat daftar aset</a>
+        </div>
+      </div>
+      <div class="tiles-card reveal" style="animation-delay:.12s">
+        <h2>Bentuk asli 15 bidang aset, urut peringkat</h2>
+        <div class="tiles" id="tiles"></div>
+        <p class="tiles-note">Ukuran tiap bidang diskalakan agar sama besar. Klik untuk melihat di peta.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="wrap">
+      <h2>Sebaran kelas prioritas</h2>
+      <p class="sub">Jumlah bidang aset pada tiap kelas, dari prioritas paling tinggi sampai paling rendah.</p>
+      <div class="card">
+        <div class="dist" id="dist" role="img" aria-label="Sebaran kelas prioritas"></div>
+        <div class="dist-legend" id="distLegend"></div>
+        <div class="stats" id="stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0">
+    <div class="wrap split">
+      <div class="card">
+        <h2 style="font-size:22px">Lima peringkat teratas</h2>
+        <ul class="toplist" id="toplist"></ul>
+      </div>
+      <div class="card">
+        <h2 style="font-size:22px">Cara membaca hasil</h2>
+        <p>Skor akhir adalah rata-rata tertimbang dari lima kriteria dengan skala 1 sampai 5. Semakin tinggi skor, semakin tinggi prioritas pengelolaannya.</p>
+        <p>Kelas prioritas diturunkan dari skor akhir. Tiap kelas punya rekomendasi tindak lanjut yang muncul di pop-up saat bidang diklik.</p>
+        <p><a href="#/metodologi">Lihat kriteria dan bobot AHP</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PETA -->
+<section data-page="peta" hidden>
+  <div class="mapview">
+    <aside class="side" aria-label="Kontrol peta">
+      <h2>Layer peta</h2>
+      <fieldset>
+        <legend>Peta dasar</legend>
+        <label><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
+        <label><input type="radio" name="base" value="sat"> Citra satelit</label>
+      </fieldset>
+      <fieldset>
+        <legend>Kelas prioritas</legend>
+        <div id="classToggles"></div>
+      </fieldset>
+      <fieldset>
+        <legend>Penanda titik</legend>
+        <label><input type="checkbox" id="togglePins" checked> Tampilkan titik di tiap bidang</label>
+      </fieldset>
+      <h2 style="margin-top:6px">Aset</h2>
+      <ul class="assetlist" id="assetlist"></ul>
+    </aside>
+    <div id="map" role="application" aria-label="Peta prioritas aset"></div>
+  </div>
+</section>
+
+<!-- DAFTAR -->
+<section data-page="daftar" hidden>
+  <div class="section">
+    <div class="wrap">
+      <h2>Daftar aset</h2>
+      <p class="sub">Urut berdasarkan peringkat. Klik judul kolom untuk mengurutkan, atau pilih kelas untuk menyaring.</p>
+      <div class="chips" id="chips"></div>
+      <div class="tablewrap"><table class="data" id="table"></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- METODOLOGI -->
+<section data-page="metodologi" hidden>
+  <div class="section">
+    <div class="wrap">
+      <h2>Metodologi</h2>
+      <p class="sub">Bobot kriteria ditentukan dengan AHP dari penilaian pakar, lalu digabung dengan skor tiap bidang melalui weighted overlay.</p>
+
+      <h3 style="margin:8px 0 12px;font-size:20px">Alur analisis</h3>
+      <ol class="steps">
+        <li><b>Kriteria</b>Lima kriteria ditetapkan dari kajian pustaka.</li>
+        <li><b>Bobot AHP</b>Perbandingan berpasangan, lolos uji konsistensi.</li>
+        <li><b>Reklasifikasi</b>Setiap kriteria diberi skor 1 sampai 5.</li>
+        <li><b>Weighted overlay</b>Skor dikalikan bobot lalu dijumlahkan.</li>
+        <li><b>Klasifikasi</b>Skor akhir dibagi menjadi kelas prioritas.</li>
+      </ol>
+
+      <h3 style="margin:36px 0 8px;font-size:20px">Bobot kriteria</h3>
+      <div class="formula">Skor akhir = Σ (bobot × skor kriteria)</div>
+      <div class="card" id="weights"></div>
+
+      <h3 style="margin:36px 0 8px;font-size:20px">Kelas prioritas dan rekomendasi</h3>
+      <p class="sub" style="margin-bottom:14px">Rentang skor di bawah ini diambil dari hasil perhitungan 15 bidang aset.</p>
+      <div class="tablewrap"><table class="data" id="classTable"></table></div>
+
+      <h3 style="margin:36px 0 12px;font-size:20px">Catatan data</h3>
+      <div class="note" id="dataNotes"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TENTANG -->
+<section data-page="tentang" hidden>
+  <div class="section">
+    <div class="wrap" style="max-width:760px">
+      <h2>Tentang</h2>
+      <p>Aplikasi ini adalah WebGIS statis untuk penelitian tugas akhir <b>Analisis Prioritas Pengelolaan Tanah Aset Pemerintah Daerah Berbasis Pendekatan Multi-Kriteria dan Analisis Spasial (Studi Kasus: Kota Surabaya)</b>, Departemen Teknik Geomatika, Institut Teknologi Sepuluh Nopember.</p>
+      <p>Aplikasi hanya menampilkan hasil analisis. Tidak ada fitur menambah aset, audit, atau pembaruan data secara langsung.</p>
+      <h3 style="margin:28px 0 8px;font-size:20px">Cara menggunakan</h3>
+      <p>Buka halaman Peta, geser dan perbesar peta, lalu klik bidang atau titik aset untuk melihat skor, nilai tiap kriteria, dan rekomendasi. Gunakan panel kiri untuk mengganti peta dasar atau menyaring kelas prioritas.</p>
+      <h3 style="margin:28px 0 8px;font-size:20px">Sumber data</h3>
+      <p>Bidang tanah aset dari BPKAD Kota Surabaya, NJOP dari Bapenda, RDTR dari Dinas Cipta Karya dan Tata Ruang, jaringan jalan dari OpenStreetMap, dan status sertifikat dari BHUMI ATR/BPN. Bobot kriteria berasal dari penilaian pakar dengan metode AHP.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap">Peta prioritas aset tanah Kota Surabaya, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const DATA = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"RANGKING":1,"ID":8,"JENIS":"Tanah Kosong","KELURAHAN":"TANDES","KECAMATAN":"TANDES","LUAS_M2":781.0,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":748000.0,"V2_NJOPMAX":6489999.999999999,"V2_NJOPMED":3375000.0000000005,"V2_SKOR":3,"V2_KET":"Rp3.000.001 - Rp7.000.000 per m2","V3_JARAK":166.4,"V3_SKOR":5,"V3_KET":"< 200 m dari jalan arteri","V4_ZONA":"Kawasan Perdagangan dan Jasa","V4_ZONA_PC":100.0,"V4_SESUAI":100.0,"V4_SKOR":3,"V4_SKOR5":5,"V4_KET":"Sepenuhnya sesuai","V5_GUNA":"Rumah","V5_GUNA_PC":99.6,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":4.8,"KELAS":5,"PRIORITAS":"Sangat tinggi","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.684721,-7.260766],[112.684857,-7.260806],[112.684805,-7.26097],[112.6849,-7.260999],[112.684875,-7.261078],[112.684635,-7.261048],[112.684721,-7.260766]]]]}},{"type":"Feature","properties":{"RANGKING":2,"ID":12,"JENIS":"Tanah Kosong","KELURAHAN":"BALONG SARI","KECAMATAN":"TANDES","LUAS_M2":1083.8,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":855000.0,"V2_NJOPMAX":7790000.000000001,"V2_NJOPMED":1862000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":342.8,"V3_SKOR":4,"V3_KET":"200-499 m dari jalan arteri","V4_ZONA":"Kawasan Peruntukan Industri","V4_ZONA_PC":100.0,"V4_SESUAI":100.0,"V4_SKOR":3,"V4_SKOR5":5,"V4_KET":"Sepenuhnya sesuai","V5_GUNA":"Jalan","V5_GUNA_PC":51.6,"V5_SKOR":3,"V5_KET":"Fungsi publik tanpa nilai ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":4.356,"KELAS":4,"PRIORITAS":"Tinggi","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.677623,-7.254521],[112.677393,-7.25445],[112.677405,-7.254371],[112.678025,-7.25445],[112.677988,-7.254492],[112.677712,-7.2547],[112.677623,-7.254521]]]]}},{"type":"Feature","properties":{"RANGKING":3,"ID":6,"JENIS":"Tanah Kosong","KELURAHAN":"JAMBANGAN","KECAMATAN":"JAMBANGAN","LUAS_M2":2424.49,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1490000.0,"V2_NJOPMAX":5350000.000000001,"V2_NJOPMED":2352000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":960.8,"V3_SKOR":2,"V3_KET":"800-1.000 m dari jalan arteri","V4_ZONA":"Kawasan Perumahan","V4_ZONA_PC":100.0,"V4_SESUAI":100.0,"V4_SKOR":3,"V4_SKOR5":5,"V4_KET":"Sepenuhnya sesuai","V5_GUNA":"Rumah","V5_GUNA_PC":76.9,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":4.11,"KELAS":4,"PRIORITAS":"Tinggi","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.715069,-7.319734],[112.715095,-7.319667],[112.716565,-7.320172],[112.716528,-7.320293],[112.715134,-7.319813],[112.715153,-7.31976],[112.715069,-7.319734]]]]}},{"type":"Feature","properties":{"RANGKING":4,"ID":7,"JENIS":"Tanah Perkampungan","KELURAHAN":"GUNUNG ANYAR","KECAMATAN":"GUNUNG ANYAR","LUAS_M2":3873.98,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":855000.0,"V2_NJOPMAX":8500000.0,"V2_NJOPMED":2352000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":915.9,"V3_SKOR":2,"V3_KET":"800-1.000 m dari jalan arteri","V4_ZONA":"Kawasan Perumahan","V4_ZONA_PC":100.0,"V4_SESUAI":100.0,"V4_SKOR":3,"V4_SKOR5":5,"V4_KET":"Sepenuhnya sesuai","V5_GUNA":"Rumah","V5_GUNA_PC":81.6,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":4.11,"KELAS":4,"PRIORITAS":"Tinggi","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.794238,-7.340842],[112.794339,-7.340864],[112.794116,-7.34251],[112.794039,-7.342488],[112.794238,-7.340842]]]]}},{"type":"Feature","properties":{"RANGKING":5,"ID":13,"JENIS":"Tanah Eks Lokalisasi","KELURAHAN":"PUTAT JAYA","KECAMATAN":"SAWAHAN","LUAS_M2":107.0,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1341000.0,"V2_NJOPMAX":5900000.0,"V2_NJOPMED":1416000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":831.8,"V3_SKOR":2,"V3_KET":"800-1.000 m dari jalan arteri","V4_ZONA":"Kawasan Perumahan","V4_ZONA_PC":100.0,"V4_SESUAI":100.0,"V4_SKOR":3,"V4_SKOR5":5,"V4_KET":"Sepenuhnya sesuai","V5_GUNA":"Perdagangan","V5_GUNA_PC":61.6,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":4.11,"KELAS":4,"PRIORITAS":"Tinggi","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.721487,-7.280782],[112.721471,-7.280839],[112.721332,-7.280814],[112.721342,-7.280755],[112.721487,-7.280782]]]]}},{"type":"Feature","properties":{"RANGKING":6,"ID":11,"JENIS":"Tanah Kosong","KELURAHAN":"BANJAR SUGIHAN","KECAMATAN":"TANDES","LUAS_M2":189.59,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1086000.0,"V2_NJOPMAX":7120000.0,"V2_NJOPMED":1498000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":3.8,"V3_SKOR":5,"V3_KET":"< 200 m dari jalan arteri","V4_ZONA":"Badan Jalan dan Rel Kereta Api","V4_ZONA_PC":52.8,"V4_SESUAI":47.2,"V4_SKOR":1,"V4_SKOR5":1,"V4_KET":"Tidak sesuai","V5_GUNA":"Perdagangan","V5_GUNA_PC":56.9,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.722,"KELAS":3,"PRIORITAS":"Sedang","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.657931,-7.253747],[112.657947,-7.253652],[112.658108,-7.253687],[112.658085,-7.25378],[112.657931,-7.253747]]]]}},{"type":"Feature","properties":{"RANGKING":7,"ID":2,"JENIS":"Tanah Perkampungan","KELURAHAN":"DUKUH PAKIS","KECAMATAN":"DUKUH PAKIS","LUAS_M2":1650.0,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1655000.0,"V2_NJOPMAX":31100000.0,"V2_NJOPMED":6195000.0,"V2_SKOR":3,"V2_KET":"Rp3.000.001 - Rp7.000.000 per m2","V3_JARAK":1078.1,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Kawasan Perumahan","V4_ZONA_PC":75.9,"V4_SESUAI":75.9,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Kantor Pemerintah","V5_GUNA_PC":99.9,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.524,"KELAS":3,"PRIORITAS":"Sedang","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.696293,-7.29551],[112.69681,-7.295524],[112.696824,-7.295775],[112.696781,-7.29583],[112.696788,-7.295923],[112.696271,-7.295691],[112.696293,-7.29551]]]]}},{"type":"Feature","properties":{"RANGKING":8,"ID":3,"JENIS":"Tanah Perkampungan","KELURAHAN":"SIWALAN KERTO","KECAMATAN":"WONOCOLO","LUAS_M2":12006.5,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1934000.0,"V2_NJOPMAX":17800000.0,"V2_NJOPMED":3375000.0000000005,"V2_SKOR":3,"V2_KET":"Rp3.000.001 - Rp7.000.000 per m2","V3_JARAK":1618.4,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Semak Belukar (Belukar) / Tanah Kosong","V4_ZONA_PC":96.2,"V4_SESUAI":3.8,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Rumah","V5_GUNA_PC":82.7,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.524,"KELAS":3,"PRIORITAS":"Sedang","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.738685,-7.343437],[112.741991,-7.343776],[112.741999,-7.343864],[112.73864,-7.343835],[112.738685,-7.343437]]]]}},{"type":"Feature","properties":{"RANGKING":9,"ID":1,"JENIS":"Tanah di Kelurahan Kebraon Kec Karang Pilang","KELURAHAN":"KEBRAON","KECAMATAN":"KARANG PILANG","LUAS_M2":3827.71,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1086000.0,"V2_NJOPMAX":5350000.000000001,"V2_NJOPMED":2013000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1116.6,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Tegalan / Tanah Kosong","V4_ZONA_PC":79.7,"V4_SESUAI":20.3,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Rumah","V5_GUNA_PC":87.5,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.424,"KELAS":2,"PRIORITAS":"Rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.696525,-7.326153],[112.696478,-7.32614],[112.696404,-7.325937],[112.696786,-7.324008],[112.696922,-7.324037],[112.696525,-7.326153]]]]}},{"type":"Feature","properties":{"RANGKING":10,"ID":9,"JENIS":"Tanah Perkampungan","KELURAHAN":"KEBRAON","KECAMATAN":"KARANG PILANG","LUAS_M2":5473.07,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1086000.0,"V2_NJOPMAX":5350000.000000001,"V2_NJOPMED":2013000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1660.5,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Tegalan / Tanah Kosong","V4_ZONA_PC":90.4,"V4_SESUAI":9.6,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Rumah","V5_GUNA_PC":92.7,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.424,"KELAS":2,"PRIORITAS":"Rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.696303,-7.328961],[112.696585,-7.329079],[112.696236,-7.330702],[112.69621,-7.330673],[112.69601,-7.330621],[112.696303,-7.328961]]]]}},{"type":"Feature","properties":{"RANGKING":11,"ID":4,"JENIS":"Tanah kosong yang tidak diusahakan","KELURAHAN":"BANGKINGAN","KECAMATAN":"LAKARSANTRI","LUAS_M2":41056.0,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":748000.0,"V2_NJOPMAX":2091000.0,"V2_NJOPMED":1147000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1065.3,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Tegalan / Tanah Kosong","V4_ZONA_PC":89.0,"V4_SESUAI":3.5,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Sarana Pelayanan umum","V5_GUNA_PC":74.1,"V5_SKOR":3,"V5_KET":"Fungsi sosial tanpa nilai ekonomi (fasum)","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.278,"KELAS":2,"PRIORITAS":"Rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.651955,-7.315166],[112.652718,-7.315299],[112.652235,-7.318211],[112.65222,-7.318301],[112.651706,-7.321395],[112.650966,-7.321274],[112.651074,-7.320501],[112.65128,-7.319102],[112.651356,-7.318588],[112.651399,-7.318298],[112.651433,-7.318067],[112.651436,-7.318068],[112.651421,-7.318162],[112.651455,-7.318168],[112.651473,-7.318165],[112.65222,-7.318301],[112.652235,-7.318211],[112.651498,-7.318089],[112.651489,-7.318088],[112.651478,-7.318076],[112.651433,-7.318067],[112.651672,-7.316733],[112.651756,-7.316267],[112.651815,-7.31594],[112.651955,-7.315166]]]]}},{"type":"Feature","properties":{"RANGKING":12,"ID":14,"JENIS":"Tanah Sawah","KELURAHAN":"JAMBANGAN","KECAMATAN":"JAMBANGAN","LUAS_M2":2681.6,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1490000.0,"V2_NJOPMAX":5350000.000000001,"V2_NJOPMED":2352000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1277.3,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Semak Belukar (Belukar) / Tanah Kosong","V4_ZONA_PC":96.6,"V4_SESUAI":0.0,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Sarana Pelayanan umum","V5_GUNA_PC":100.0,"V5_SKOR":3,"V5_KET":"Fungsi sosial tanpa nilai ekonomi (fasum)","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.278,"KELAS":2,"PRIORITAS":"Rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.717603,-7.321489],[112.71768,-7.321196],[112.718363,-7.321367],[112.718282,-7.321675],[112.717603,-7.321489]]]]}},{"type":"Feature","properties":{"RANGKING":13,"ID":15,"JENIS":"Tanah Perkampungan","KELURAHAN":"BULAK BANTENG","KECAMATAN":"KENJERAN","LUAS_M2":4537.41,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1086000.0,"V2_NJOPMAX":1789000.0,"V2_NJOPMED":1147000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1214.8,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Semak Belukar (Belukar) / Tanah Kosong","V4_ZONA_PC":100.0,"V4_SESUAI":0.0,"V4_SKOR":2,"V4_SKOR5":3,"V4_KET":"Sesuai sebagian / perlu penyesuaian","V5_GUNA":"Sarana Pelayanan umum","V5_GUNA_PC":96.6,"V5_SKOR":3,"V5_KET":"Fungsi sosial tanpa nilai ekonomi (fasum)","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":3.278,"KELAS":2,"PRIORITAS":"Rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.766142,-7.21788],[112.766153,-7.217847],[112.766643,-7.217942],[112.766406,-7.218631],[112.765869,-7.218477],[112.766142,-7.21788]]]]}},{"type":"Feature","properties":{"RANGKING":14,"ID":5,"JENIS":"Tanah Bozem","KELURAHAN":"JAMBANGAN","KECAMATAN":"JAMBANGAN","LUAS_M2":782.14,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1490000.0,"V2_NJOPMAX":5350000.000000001,"V2_NJOPMED":2352000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":1268.1,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Kawasan Perumahan","V4_ZONA_PC":100.0,"V4_SESUAI":0.0,"V4_SKOR":1,"V4_SKOR5":1,"V4_KET":"Tidak sesuai","V5_GUNA":"Rumah","V5_GUNA_PC":92.1,"V5_SKOR":5,"V5_KET":"Produktif sesuai potensi ekonomi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":2.936,"KELAS":1,"PRIORITAS":"Sangat rendah","PARSIAL":null},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.71695,-7.322109],[112.717314,-7.322232],[112.717274,-7.32235],[112.71658,-7.322129],[112.716631,-7.321996],[112.716718,-7.322026],[112.716676,-7.322155],[112.716907,-7.322232],[112.71695,-7.322109]]]]}},{"type":"Feature","properties":{"RANGKING":15,"ID":10,"JENIS":"Tanah Danau/Rawa","KELURAHAN":"WARU GUNUNG","KECAMATAN":"KARANG PILANG","LUAS_M2":9068.86,"V1_SKOR":5,"V1_KET":"Jelas dan sah sesuai dokumen sertifikat tanah resmi","V2_NJOPMIN":1086000.0,"V2_NJOPMAX":3550000.0,"V2_NJOPMED":1147000.0,"V2_SKOR":2,"V2_KET":"Rp1.000.000 - Rp3.000.000 per m2","V3_JARAK":3135.1,"V3_SKOR":1,"V3_KET":"> 1.000 m dari jalan arteri","V4_ZONA":"Kawasan Peruntukan Industri","V4_ZONA_PC":99.4,"V4_SESUAI":0.0,"V4_SKOR":1,"V4_SKOR5":1,"V4_KET":"Tidak sesuai","V5_GUNA":"PB, PS, RTH","V5_GUNA_PC":100.0,"V5_SKOR":null,"V5_KET":"Belum dinilai - arti Jenis belum dikonfirmasi","BOBOT_V1":0.385533,"BOBOT_V2":0.100106,"BOBOT_V3":0.196661,"BOBOT_V4":0.244384,"BOBOT_V5":0.073317,"SKOR_AKHIR":2.772,"KELAS":1,"PRIORITAS":"Sangat rendah","PARSIAL":"ya"},"geometry":{"type":"MultiPolygon","coordinates":[[[[112.666879,-7.336571],[112.66694,-7.336543],[112.667056,-7.33719],[112.667,-7.337206],[112.667008,-7.337625],[112.666284,-7.337521],[112.666276,-7.336994],[112.665878,-7.336998],[112.665886,-7.336922],[112.66558,-7.336855],[112.665568,-7.336803],[112.666039,-7.336899],[112.666071,-7.336843],[112.666288,-7.336775],[112.666368,-7.336687],[112.666622,-7.336711],[112.666662,-7.336623],[112.666855,-7.336623],[112.666879,-7.336571]]]]}}]};
+
+/* ---------- konfigurasi ---------- */
+const CLASSES = {
+  5:{label:"Sangat tinggi",color:"#9B1C2E",group:"Tinggi"},
+  4:{label:"Tinggi",color:"#E4572E",group:"Tinggi"},
+  3:{label:"Sedang",color:"#F2B134",group:"Sedang"},
+  2:{label:"Rendah",color:"#8CC152",group:"Rendah"},
+  1:{label:"Sangat rendah",color:"#2E8B57",group:"Rendah"}
+};
+const REKOMENDASI = {
+  Tinggi:"Direkomendasikan untuk disertifikasi, diamankan, atau ditindaklanjuti secara segera.",
+  Sedang:"Direkomendasikan untuk optimalisasi pemanfaatan atau penataan fungsi.",
+  Rendah:"Direkomendasikan untuk monitoring atau inventarisasi lanjutan."
+};
+const CRITERIA = [
+  {k:"V1",name:"Status kepemilikan"},
+  {k:"V2",name:"Nilai Jual Objek Pajak (NJOP)"},
+  {k:"V3",name:"Aksesibilitas"},
+  {k:"V4",name:"Kesesuaian tata ruang"},
+  {k:"V5",name:"Penggunaan lahan saat ini"}
+];
+
+/* ---------- util ---------- */
+const feats = DATA.features.slice().sort((a,b)=>a.properties.RANGKING-b.properties.RANGKING);
+const P = f => f.properties;
+const fmt = (n,d=0) => Number(n).toLocaleString("id-ID",{minimumFractionDigits:d,maximumFractionDigits:d});
+const titleCase = s => s.toLowerCase().replace(/\b\p{L}/gu,c=>c.toUpperCase());
+const rupiah = n => "Rp" + fmt(n);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill = k => `<span class="pill k${k}">${CLASSES[k].label}</span>`;
+const textOn = k => (k==3||k==2) ? "#2b2100" : "#fff";
+const rekFor = p => REKOMENDASI[CLASSES[p.KELAS].group];
+const jenisShort = j => j.length>26 ? j.slice(0,24)+"…" : j;
+
+function skorOf(p,c){ return c==="V4" ? p.V4_SKOR5 : p[c+"_SKOR"]; }
+function detailOf(p,c){
+  switch(c){
+    case "V1": return p.V1_KET;
+    case "V2": return `${p.V2_KET}. Median ${rupiah(p.V2_NJOPMED)}/m²`;
+    case "V3": return `${fmt(p.V3_JARAK,1)} m dari jalan arteri`;
+    case "V4": return `${titleCase(p.V4_ZONA).replace(/ Dan /g," dan ")}. ${p.V4_KET}`;
+    case "V5": return p.V5_SKOR==null ? p.V5_KET : `${p.V5_GUNA}. ${p.V5_KET}`;
+  }
+}
+
+/* ---------- beranda ---------- */
+function ringsOf(g){ return g.type==="Polygon" ? [g.coordinates] : g.coordinates; }
+function tileSVG(f){
+  const polys = ringsOf(f.geometry);
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  const lat0 = polys[0][0][0][1]*Math.PI/180, kx = Math.cos(lat0);
+  polys.forEach(r=>r[0].forEach(([x,y])=>{x*=kx;minx=Math.min(minx,x);maxx=Math.max(maxx,x);miny=Math.min(miny,y);maxy=Math.max(maxy,y)}));
+  const w=maxx-minx,h=maxy-miny,s=80/Math.max(w,h);
+  const ox=(100-w*s)/2, oy=(100-h*s)/2;
+  const d = polys.map(r=>r[0].map(([x,y],i)=>`${i?"L":"M"}${(ox+(x*kx-minx)*s).toFixed(1)} ${(100-(oy+(y-miny)*s)).toFixed(1)}`).join("")+"Z").join("");
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="${d}" fill="${CLASSES[P(f).KELAS].color}" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+}
+function buildHome(){
+  document.getElementById("tiles").innerHTML = feats.map(f=>
+    `<button class="tile" data-id="${P(f).ID}" aria-label="Peringkat ${P(f).RANGKING}, ${esc(P(f).JENIS)}, ${CLASSES[P(f).KELAS].label}">${tileSVG(f)}<span class="rk">#${P(f).RANGKING}</span></button>`).join("");
+  document.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{location.hash="#/peta/"+b.dataset.id});
+
+  const counts={};feats.forEach(f=>counts[P(f).KELAS]=(counts[P(f).KELAS]||0)+1);
+  const order=[5,4,3,2,1];
+  document.getElementById("dist").innerHTML = order.filter(k=>counts[k]).map(k=>
+    `<div style="flex:${counts[k]};background:${CLASSES[k].color};color:${textOn(k)}">${counts[k]}</div>`).join("");
+  document.getElementById("distLegend").innerHTML = order.map(k=>
+    `<span><i class="dot" style="background:${CLASSES[k].color}"></i>${CLASSES[k].label} (${counts[k]||0})</span>`).join("");
+  const totalLuas = feats.reduce((s,f)=>s+P(f).LUAS_M2,0);
+  const kec = new Set(feats.map(f=>P(f).KECAMATAN)).size;
+  document.getElementById("stats").innerHTML =
+    `<div class="stat"><b>${feats.length}</b><span>bidang aset dinilai</span></div>
+     <div class="stat"><b>${fmt(totalLuas/10000,1)} ha</b><span>total luas bidang</span></div>
+     <div class="stat"><b>${kec}</b><span>kecamatan tersebar</span></div>`;
+  document.getElementById("toplist").innerHTML = feats.slice(0,5).map(f=>{const p=P(f);return `
+    <li><span class="n k${p.KELAS}">${p.RANGKING}</span>
+    <div class="t"><b>${esc(p.JENIS)}</b><span>${titleCase(p.KELURAHAN)}, ${titleCase(p.KECAMATAN)} · skor ${fmt(p.SKOR_AKHIR,2)}</span></div>
+    <button data-id="${p.ID}">Lihat di peta</button></li>`}).join("");
+  document.querySelectorAll("#toplist button").forEach(b=>b.onclick=()=>{location.hash="#/peta/"+b.dataset.id});
+}
+
+/* ---------- peta ---------- */
+let map, baseLayers, groupLayers={}, layerById={}, mapReady=false, activeClasses=new Set([1,2,3,4,5]);
+function popupHTML(f){
+  const p=P(f), pr = p.PARSIAL ? `<div class="warn">Skor dihitung dari empat kriteria karena penggunaan lahan belum dinilai.</div>` : "";
+  const rows = CRITERIA.map(c=>{
+    const sk=skorOf(p,c.k), w=p["BOBOT_"+c.k];
+    return `<tr><td><b style="font-weight:600">${c.name}</b><br><span style="color:#4A5E73">${esc(detailOf(p,c.k))}</span></td><td>${sk==null?"–":sk+"/5"}<br><span style="font-weight:400;color:#4A5E73">${fmt(w*100,1)}%</span></td></tr>`}).join("");
+  return `<div class="pop">
+    ${pill(p.KELAS)} <span style="font-size:13px;color:#4A5E73">Peringkat ${p.RANGKING} dari ${feats.length}</span>
+    <h3>${esc(p.JENIS)}</h3>
+    <div class="loc">${titleCase(p.KELURAHAN)}, ${titleCase(p.KECAMATAN)} · ${fmt(p.LUAS_M2,1)} m²</div>
+    <div class="score"><b>${fmt(p.SKOR_AKHIR,2)}</b><span style="font-size:13px;color:#4A5E73">skor akhir (skala 1 sampai 5)</span></div>
+    <table>${rows}</table>
+    ${pr}
+    <div class="rec"><b>Rekomendasi: prioritas ${CLASSES[p.KELAS].group.toLowerCase()}</b>${rekFor(p)}</div></div>`;
+}
+function initMap(){
+  if(mapReady) return; mapReady=true;
+  map = L.map("map",{zoomControl:true});
+  baseLayers = {
+    osm:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
+    sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Esri World Imagery"})
+  };
+  baseLayers.osm.addTo(map);
+  [1,2,3,4,5].forEach(k=>groupLayers[k]=L.layerGroup().addTo(map));
+  const all=[];
+  feats.forEach(f=>{
+    const p=P(f), col=CLASSES[p.KELAS].color;
+    const poly=L.geoJSON(f,{style:{color:"#fff",weight:2,fillColor:col,fillOpacity:.85}});
+    const c=poly.getBounds().getCenter();
+    const pin=L.circleMarker(c,{radius:9,color:"#fff",weight:2,fillColor:col,fillOpacity:1,className:"pin"});
+    pin.bindTooltip(`#${p.RANGKING}`,{permanent:true,direction:"center",className:"pintip"});
+    const html=()=>popupHTML(f);
+    poly.bindPopup(html,{maxWidth:330,autoPanPadding:[30,30]});
+    pin.bindPopup(html,{maxWidth:330,autoPanPadding:[30,30]});
+    poly.addTo(groupLayers[p.KELAS]); pin.addTo(groupLayers[p.KELAS]);
+    layerById[p.ID]={poly,pin,center:c,bounds:poly.getBounds()};
+    all.push(poly.getBounds());
+  });
+  window._allBounds = all.reduce((a,b)=>a.extend(b));
+  map.fitBounds(window._allBounds.pad(.15));
+
+  const legend=L.control({position:"bottomright"});
+  legend.onAdd=()=>{const d=L.DomUtil.create("div","legend");
+    d.innerHTML="<b>Kelas prioritas</b><br>"+[5,4,3,2,1].map(k=>`<i class="dot" style="background:${CLASSES[k].color}"></i>${CLASSES[k].label}`).join("<br>");return d};
+  legend.addTo(map);
+
+  document.querySelectorAll('input[name="base"]').forEach(r=>r.onchange=()=>{
+    Object.values(baseLayers).forEach(l=>map.removeLayer(l)); baseLayers[r.value].addTo(map); baseLayers[r.value].bringToBack();});
+  document.getElementById("classToggles").innerHTML=[5,4,3,2,1].map(k=>
+    `<label><input type="checkbox" data-k="${k}" checked><i class="dot" style="background:${CLASSES[k].color}"></i>${CLASSES[k].label}</label>`).join("");
+  document.querySelectorAll("#classToggles input").forEach(cb=>cb.onchange=()=>{
+    const k=+cb.dataset.k; cb.checked?map.addLayer(groupLayers[k]):map.removeLayer(groupLayers[k]);});
+  document.getElementById("togglePins").onchange=e=>{
+    feats.forEach(f=>{const l=layerById[P(f).ID];const g=groupLayers[P(f).KELAS];
+      e.target.checked?g.addLayer(l.pin):g.removeLayer(l.pin);});};
+  document.getElementById("assetlist").innerHTML=feats.map(f=>{const p=P(f);return `
+    <li><button data-id="${p.ID}"><span class="n k${p.KELAS}">${p.RANGKING}</span>
+    <span class="t">${esc(jenisShort(p.JENIS))}<span>${titleCase(p.KELURAHAN)} · ${fmt(p.SKOR_AKHIR,2)}</span></span></button></li>`}).join("");
+  document.querySelectorAll("#assetlist button").forEach(b=>b.onclick=()=>focusAsset(+b.dataset.id));
+}
+function focusAsset(id){
+  const l=layerById[id]; if(!l) return;
+  map.flyToBounds(l.bounds.pad(2.5),{maxZoom:18,duration:.8});
+  map.once("moveend",()=>l.pin.openPopup());
+}
+
+/* ---------- daftar ---------- */
+let sortKey="RANGKING", sortDir=1, filterK=null;
+function buildTable(){
+  document.getElementById("chips").innerHTML =
+    `<button class="chip" aria-pressed="${filterK===null}" data-k="all">Semua (${feats.length})</button>`+
+    [5,4,3,2,1].map(k=>`<button class="chip" aria-pressed="${filterK===k}" data-k="${k}">${CLASSES[k].label} (${feats.filter(f=>P(f).KELAS===k).length})</button>`).join("");
+  document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filterK=c.dataset.k==="all"?null:+c.dataset.k;buildTable()});
+  const cols=[
+    ["RANGKING","Peringkat",1],["JENIS","Jenis aset"],["KELURAHAN","Kelurahan"],["KECAMATAN","Kecamatan"],
+    ["LUAS_M2","Luas (m²)",1],["SKOR_AKHIR","Skor",1],["KELAS","Kelas"]];
+  let rows=feats.filter(f=>filterK===null||P(f).KELAS===filterK);
+  rows.sort((a,b)=>{const x=P(a)[sortKey],y=P(b)[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir});
+  const head=cols.map(([k,l,n])=>`<th class="${n?"num":""}" aria-sort="${sortKey===k?(sortDir>0?"ascending":"descending"):"none"}"><button data-k="${k}">${l}${sortKey===k?(sortDir>0?" ▲":" ▼"):""}</button></th>`).join("")+"<th>Rekomendasi</th><th></th>";
+  const body=rows.map(f=>{const p=P(f);return `<tr>
+    <td class="num">${p.RANGKING}</td><td>${esc(p.JENIS)}</td><td>${titleCase(p.KELURAHAN)}</td><td>${titleCase(p.KECAMATAN)}</td>
+    <td class="num">${fmt(p.LUAS_M2,1)}</td><td class="num">${fmt(p.SKOR_AKHIR,2)}</td><td>${pill(p.KELAS)}</td>
+    <td>Prioritas ${CLASSES[p.KELAS].group.toLowerCase()}</td>
+    <td><button class="linkbtn" data-id="${p.ID}">Lihat di peta</button></td></tr>`}).join("");
+  document.getElementById("table").innerHTML=`<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+  document.querySelectorAll("#table th button").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k; if(sortKey===k) sortDir*=-1; else {sortKey=k;sortDir=1;} buildTable();});
+  document.querySelectorAll("#table .linkbtn").forEach(b=>b.onclick=()=>{location.hash="#/peta/"+b.dataset.id});
+}
+
+/* ---------- metodologi ---------- */
+function buildMethod(){
+  const p0=P(feats[0]);
+  document.getElementById("weights").innerHTML = CRITERIA.map(c=>{const w=p0["BOBOT_"+c.k]*100;return `
+    <div class="wbar"><span>${c.name}</span><div class="track"><div class="fill" style="width:${w/0.4}%"></div></div><b>${fmt(w,1)}%</b></div>`}).join("")
+    + `<p style="font-size:14px;color:#4A5E73;margin:12px 0 0">Total bobot 100%. Skor tiap kriteria memakai skala 1 sampai 5.</p>`;
+  const rows=[5,4,3,2,1].map(k=>{
+    const s=feats.filter(f=>P(f).KELAS===k).map(f=>P(f).SKOR_AKHIR);
+    const range = s.length ? (Math.min(...s)===Math.max(...s)?fmt(s[0],2):`${fmt(Math.min(...s),2)} sampai ${fmt(Math.max(...s),2)}`) : "–";
+    return `<tr><td>${pill(k)}</td><td>${range}</td><td class="num">${s.length}</td><td style="white-space:normal">${REKOMENDASI[CLASSES[k].group]}</td></tr>`}).join("");
+  document.getElementById("classTable").innerHTML=
+    `<thead><tr><th>Kelas</th><th>Rentang skor</th><th class="num">Jumlah aset</th><th>Rekomendasi</th></tr></thead><tbody>${rows}</tbody>`;
+  const parsial=feats.filter(f=>P(f).PARSIAL);
+  document.getElementById("dataNotes").innerHTML =
+    `<ul style="margin:0;padding-left:20px">
+      <li>Skor kesesuaian tata ruang memakai skala 1 sampai 5 agar sejajar dengan kriteria lain.</li>
+      ${parsial.length?`<li>${parsial.length} aset (${parsial.map(f=>esc(P(f).JENIS)+", peringkat "+P(f).RANGKING).join("; ")}) belum punya nilai penggunaan lahan. Skornya dihitung dari empat kriteria dengan bobot disesuaikan ulang.</li>`:""}
+      <li>Seluruh aset yang dinilai berstatus sertifikat jelas dan sah, sehingga perbedaan peringkat ditentukan oleh kriteria lain.</li>
+    </ul>`;
+}
+
+/* ---------- router ---------- */
+function route(){
+  const parts=(location.hash||"#/beranda").replace("#/","").split("/");
+  const page=["beranda","peta","daftar","metodologi","tentang"].includes(parts[0])?parts[0]:"beranda";
+  document.querySelectorAll("[data-page]").forEach(s=>s.hidden=s.dataset.page!==page);
+  document.querySelectorAll("[data-nav]").forEach(a=>a.dataset.nav===page?a.setAttribute("aria-current","page"):a.removeAttribute("aria-current"));
+  document.querySelector("footer").hidden = page==="peta";
+  if(page==="peta"){
+    initMap(); setTimeout(()=>{map.invalidateSize(); if(parts[1]) focusAsset(+parts[1]);},50);
+  } else window.scrollTo(0,0);
+}
+buildHome(); buildTable(); buildMethod();
+window.addEventListener("hashchange",route); route();
+</script>
+<style>
+.pintip{background:transparent;border:0;box-shadow:none;color:#fff;font-weight:600;font-size:11px;padding:0}
+.pintip:before{display:none}
+.leaflet-tooltip-pane .pintip{text-shadow:0 0 2px rgba(0,0,0,.6)}
+</style>
+</body>
+</html>
