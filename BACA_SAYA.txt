@@ -1,0 +1,4 @@
+ASTRA - Aset Tanah Surabaya (WebGIS)
+Jalankan lewat server (bukan klik dua kali): di folder ini ketik  python -m http.server 8000
+lalu buka http://localhost:8000  -> menu Peta -> panel kiri "Lapisan tambahan".
+Untuk hosting: unggah index.html dan folder data/ ke GitHub Pages / Netlify (otomatis dikompres gzip).

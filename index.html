@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Peta Prioritas Aset Tanah Kota Surabaya</title>
+<title>ASTRA – Aset Tanah Surabaya | Sistem Informasi Prioritas Pengelolaan Aset Daerah</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
@@ -30,7 +31,7 @@ button{font-family:inherit;cursor:pointer}
 .nav{position:sticky;top:0;z-index:1000;height:var(--nav-h);background:#fff;border-bottom:1px solid var(--line)}
 .nav .wrap{display:flex;align-items:center;gap:20px;height:100%}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--font-head);font-weight:700;font-size:17px;white-space:nowrap}
-.brand svg{flex:none}
+.brand img{display:block;width:auto}.logo-full{height:46px}.logo-mini{height:40px;display:none!important}
 .nav-links{display:flex;gap:4px;margin-left:auto;overflow-x:auto}
 .nav-links a{padding:8px 12px;border-radius:8px;text-decoration:none;color:var(--ink-soft);font-weight:500;font-size:15px;white-space:nowrap}
 .nav-links a:hover{background:var(--paper);color:var(--ink)}
@@ -140,6 +141,7 @@ table.data tr:last-child td{border:0}
 .note{background:#FFF3D6;border-radius:10px;padding:14px 16px;font-size:14.5px}
 footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var(--ink-soft);font-size:14px}
 
+@media (max-width:640px){.logo-full{display:none!important}.logo-mini{display:block!important}}
 @media (max-width:900px){
   .hero .wrap,.split{grid-template-columns:1fr}
   .steps{grid-template-columns:1fr 1fr}
@@ -160,9 +162,9 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
 
 <header class="nav">
   <div class="wrap">
-    <a class="brand" href="#/beranda" aria-label="Beranda">
-      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="8" fill="#0B5CAD"/><path d="M8 20l4-9 5 5 5-8" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="22" cy="8" r="2.2" fill="#F2B134"/></svg>
-      <span>Prioritas Aset Tanah Surabaya</span>
+    <a class="brand" href="#/beranda" aria-label="ASTRA, Aset Tanah Surabaya. Ke beranda">
+      <img class="logo-full" src="assets/astra-logo.png" alt="ASTRA – Aset Tanah Surabaya. Sistem Informasi Prioritas Pengelolaan Aset Daerah" height="46">
+      <img class="logo-mini" src="assets/astra-emblem.png" alt="ASTRA" height="40">
     </a>
     <nav class="nav-links" aria-label="Menu utama">
       <a href="#/beranda" data-nav="beranda">Beranda</a>
@@ -181,7 +183,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
   <div class="hero">
     <div class="wrap">
       <div class="reveal">
-        <span class="badge">Penelitian tugas akhir Teknik Geomatika ITS</span>
+        <span class="badge">ASTRA · Sistem Informasi Prioritas Pengelolaan Aset Daerah</span>
         <h1>Aset tanah Pemkot Surabaya mana yang perlu ditangani lebih dulu?</h1>
         <p class="lead">15 bidang aset dinilai dengan AHP dan weighted overlay pada lima kriteria, lalu dikelompokkan ke lima kelas prioritas. Klik bidang di peta untuk melihat skor dan rekomendasinya.</p>
         <div class="actions">
@@ -250,7 +252,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
       <h2 style="margin-top:6px">Aset</h2>
       <ul class="assetlist" id="assetlist"></ul>
     </aside>
-    <div id="map" role="application" aria-label="Peta prioritas aset"></div>
+    <div id="map" role="application" aria-label="Peta ASTRA, prioritas aset tanah Surabaya"></div>
   </div>
 </section>
 
@@ -306,7 +308,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
   <div class="section">
     <div class="wrap" style="max-width:760px">
       <h2>Tentang</h2>
-      <p>Aplikasi ini adalah WebGIS statis untuk penelitian tugas akhir <b>Analisis Prioritas Pengelolaan Tanah Aset Pemerintah Daerah Berbasis Pendekatan Multi-Kriteria dan Analisis Spasial (Studi Kasus: Kota Surabaya)</b>, Departemen Teknik Geomatika, Institut Teknologi Sepuluh Nopember.</p>
+      <p><b>ASTRA (Aset Tanah Surabaya)</b> adalah WebGIS statis untuk penelitian tugas akhir <b>Analisis Prioritas Pengelolaan Tanah Aset Pemerintah Daerah Berbasis Pendekatan Multi-Kriteria dan Analisis Spasial (Studi Kasus: Kota Surabaya)</b>, Departemen Teknik Geomatika, Institut Teknologi Sepuluh Nopember.</p>
       <p>Aplikasi hanya menampilkan hasil analisis. Tidak ada fitur menambah aset, audit, atau pembaruan data secara langsung.</p>
       <h3 style="margin:28px 0 8px;font-size:20px">Cara menggunakan</h3>
       <p>Buka halaman Peta, geser dan perbesar peta, lalu klik bidang atau titik aset untuk melihat skor, nilai tiap kriteria, dan rekomendasi. Gunakan panel kiri untuk mengganti peta dasar atau menyaring kelas prioritas.</p>
@@ -317,7 +319,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
 </section>
 </main>
 
-<footer><div class="wrap">Peta prioritas aset tanah Kota Surabaya, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
+<footer><div class="wrap">ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
