@@ -141,6 +141,18 @@ table.data tr:last-child td{border:0}
 .note{background:#FFF3D6;border-radius:10px;padding:14px 16px;font-size:14.5px}
 footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var(--ink-soft);font-size:14px}
 
+
+/* logo institusi */
+.partners{background:#fff;border-bottom:1px solid var(--line);padding:26px 0}
+.partners .wrap{display:flex;align-items:center;justify-content:center;gap:20px 56px;flex-wrap:wrap}
+.partners .cap{flex-basis:100%;text-align:center;font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin:0}
+.partners ul{list-style:none;margin:0;padding:0;display:flex;align-items:center;justify-content:center;gap:20px 56px;flex-wrap:wrap}
+.partners li{display:flex;align-items:center;justify-content:center;height:92px}
+.partners img{display:block;height:100%;width:auto;max-width:100%;object-fit:contain}
+.partners li.wide{height:100px}
+.foot-logos{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-bottom:14px}
+.foot-logos img{display:block;height:40px;width:auto}
+@media (max-width:640px){.partners li{height:68px}.partners li.wide{height:72px}.partners ul{gap:18px 32px}}
 @media (max-width:640px){.logo-full{display:none!important}.logo-mini{display:block!important}}
 @media (max-width:900px){
   .hero .wrap,.split{grid-template-columns:1fr}
@@ -196,6 +208,17 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
         <div class="tiles" id="tiles"></div>
         <p class="tiles-note">Ukuran tiap bidang diskalakan agar sama besar. Klik untuk melihat di peta.</p>
       </div>
+    </div>
+  </div>
+
+  <div class="partners">
+    <div class="wrap">
+      <p class="cap">Penelitian tugas akhir · studi kasus</p>
+      <ul>
+        <li><img src="assets/logo-surabaya.png" alt="Lambang Pemerintah Kota Surabaya"></li>
+        <li class="wide"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember (ITS)"></li>
+        <li><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></li>
+      </ul>
     </div>
   </div>
 
@@ -319,7 +342,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
 </section>
 </main>
 
-<footer><div class="wrap">ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
+<footer><div class="wrap"><div class="foot-logos"><img src="assets/logo-surabaya.png" alt="Pemerintah Kota Surabaya"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember"><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></div>ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
