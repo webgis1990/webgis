@@ -473,14 +473,14 @@ function initMap(){
    field : kolom atribut untuk pewarnaan; classes boleh dikosongkan -> warna dibuat otomatis
    Koordinat boleh WGS84 atau UTM 49S (dikenali & dikonversi otomatis).                    */
 const EXT_LAYERS=[
- {id:"akses",nama:"Peta aksesibilitas (jarak jalan arteri)",file:"data/aksesibilitas.geojson",field:"Skor",opacity:.65,
+ {id:"akses",nama:"Peta aksesibilitas (jarak jalan arteri)",file:"data/Aksesibilitas.geojson",field:"Skor",opacity:.65,
   classes:[{v:5,c:"#1a9850",l:"Skor 5: < 200 m"},{v:4,c:"#91cf60",l:"Skor 4: 200–499 m"},{v:3,c:"#ffffbf",l:"Skor 3: 500–799 m"},{v:2,c:"#fc8d59",l:"Skor 2: 800–1.000 m"},{v:1,c:"#d73027",l:"Skor 1: > 1.000 m"}]},
- {id:"njop",nama:"Peta NJOP (skor per bidang aset)",file:"data/njop.geojson",field:"skor_njop",opacity:.85,
+ {id:"njop",nama:"Peta NJOP (skor per bidang aset)",file:"data/NJOP.geojson",field:"skor_njop",opacity:.85,
   classes:[{v:5,c:"#08306b",l:"Skor 5: > Rp15 jt/m²"},{v:4,c:"#2171b5",l:"Skor 4: Rp7–15 jt"},{v:3,c:"#6baed6",l:"Skor 3: Rp3–7 jt"},{v:2,c:"#c6dbef",l:"Skor 2: Rp1–3 jt"},{v:1,c:"#f7fbff",l:"Skor 1: < Rp1 jt"}]},
- {id:"rdtr",nama:"Peta RDTR (pola ruang)",file:"data/rdtr.geojson",field:"KELAS",colorField:"WARNA",opacity:.6},
- {id:"guna",nama:"Peta penggunaan lahan",file:"data/penggunaan_lahan.geojson",field:"Jenis",opacity:.7,
+ {id:"rdtr",nama:"Peta RDTR (pola ruang)",file:"data/PETA RDTR.geojson",field:"KELAS",colorField:"WARNA",opacity:.6},
+ {id:"guna",nama:"Peta penggunaan lahan",file:"data/PL.geojson",field:"Jenis",opacity:.7,
   classes:[{v:"Rumah",c:"#ff7d7d",l:"Rumah"},{v:"Perdagangan",c:"#d6479a",l:"Perdagangan"},{v:"Jalan",c:"#ea1e1d",l:"Jalan"},{v:"Saluran",c:"#00f0fa",l:"Saluran"},{v:"Sungai",c:"#99d9f9",l:"Sungai"},{v:"Perairan",c:"#bfeaff",l:"Perairan"},{v:"KH",c:"#4ce600",l:"KH"},{v:"PB, PS, RTH",c:"#a8d08d",l:"PB, PS, RTH"},{v:"Kantor Pemerintah",c:"#ffff00",l:"Kantor Pemerintah"},{v:"Aneka Industri",c:"#85629b",l:"Aneka Industri"},{v:"Sarana Pelayanan umum",c:"#ff8c1a",l:"Sarana Pelayanan umum"}]},
- {id:"legal",nama:"Peta status legalitas tanah aset",file:"data/legalitas.geojson",field:"STATUS",opacity:.85,
+ {id:"legal",nama:"Peta status legalitas tanah aset",file:"data/Legalitas Tanah Aset.geojson",field:"STATUS",opacity:.85,
   classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]}
 ];
 const EXT_PAL=["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac"];
