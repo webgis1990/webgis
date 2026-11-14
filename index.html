@@ -563,10 +563,19 @@ const EXT_LAYERS=[
  {id:"guna",nama:"Peta penggunaan lahan",file:"data/PL.geojson",field:"Jenis",opacity:.7,
   classes:[{v:"Rumah",c:"#ff7d7d",l:"Rumah"},{v:"Perdagangan",c:"#d6479a",l:"Perdagangan"},{v:"Jalan",c:"#ea1e1d",l:"Jalan"},{v:"Saluran",c:"#00f0fa",l:"Saluran"},{v:"Sungai",c:"#99d9f9",l:"Sungai"},{v:"Perairan",c:"#bfeaff",l:"Perairan"},{v:"KH",c:"#4ce600",l:"KH"},{v:"PB, PS, RTH",c:"#a8d08d",l:"PB, PS, RTH"},{v:"Kantor Pemerintah",c:"#ffff00",l:"Kantor Pemerintah"},{v:"Aneka Industri",c:"#85629b",l:"Aneka Industri"},{v:"Sarana Pelayanan umum",c:"#ff8c1a",l:"Sarana Pelayanan umum"}]},
  {id:"legal",nama:"Peta status legalitas tanah aset",file:"data/Legalitas Tanah Aset.geojson",field:"STATUS",opacity:.85,
-  classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]}
+  classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]},
+ {id:"skorakses",nama:"Skor aksesibilitas (titik per bidang aset)",file:"data/SkorAkses.geojson",point:true,field:"Skor_1",opacity:.95,
+  popup:[["Name","Aset"],["Skor_1","Skor aksesibilitas"],["Class","Keterangan"]],
+  classes:[{v:5,c:"#1a9850",l:"Skor 5: < 200 m"},{v:4,c:"#91cf60",l:"Skor 4: 200–499 m"},{v:3,c:"#ffffbf",l:"Skor 3: 500–799 m"},{v:2,c:"#fc8d59",l:"Skor 2: 800–1.000 m"},{v:1,c:"#d73027",l:"Skor 1: > 1.000 m / tanpa akses"}]},
+ {id:"skorpl",nama:"Skor penggunaan lahan (titik per bidang aset)",file:"data/SkorPL.geojson",point:true,field:"PL_SKOR",opacity:.95,
+  popup:[["Name","Aset"],["Jenis","Penggunaan lahan"],["PL_SKOR","Skor penggunaan lahan"],["PL_KET","Keterangan"]],
+  classes:[{v:5,c:"#1a9850",l:"Skor 5: produktif sesuai potensi ekonomi"},{v:3,c:"#f2b134",l:"Skor 3: fungsi publik/sosial tanpa nilai ekonomi"},{v:1,c:"#d73027",l:"Skor 1: tidak dimanfaatkan secara ekonomi"}]},
+ {id:"skorrdtr",nama:"Skor kesesuaian RDTR (titik per bidang aset)",file:"data/SkorRDTR.geojson",point:true,field:"SKOR_V5",opacity:.95,
+  popup:[["Name","Aset"],["KELAS","Zona RDTR"],["SKOR_V5","Skor kesesuaian tata ruang"],["KET_V5","Keterangan"]],
+  classes:[{v:5,c:"#1a9850",l:"Skor 5: produktif sesuai potensi ekonomi"},{v:3,c:"#f2b134",l:"Skor 3: fungsi publik tanpa nilai ekonomi"},{v:1,c:"#d73027",l:"Skor 1: tidak digunakan / tidak produktif"}]}
 ];
 const EXT_PAL=["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac"];
-const extState={};let extRend;
+const extState={};let extRend,ptRend;
 function utmInv(x,y){const a=6378137,e2=0.00669437999014,ep=e2/(1-e2),k=0.9996;x-=5e5;y-=1e7;
  const mu=(y/k)/(a*(1-e2/4-3*e2*e2/64-5*e2**3/256)),s1=Math.sqrt(1-e2),e1=(1-s1)/(1+s1);
  const p=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1*e1/16-55*e1**4/32)*Math.sin(4*mu)+151*e1**3/96*Math.sin(6*mu)+1097*e1**4/512*Math.sin(8*mu);
@@ -584,9 +593,12 @@ async function loadExt(cfg){
  if(!cls&&cfg.colorField){const m=new Map();d.features.forEach(f=>m.set(f.properties[cfg.field],f.properties[cfg.colorField]));cls=[...m].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))).map(([v,c])=>({v,c,l:String(v)}));}
  cls=cls||[];
  const col=p=>{const k=cls.find(x=>x.v==p[cfg.field]);return k?k.c:"#9aa5b1"};
+ const popRows=p=>cfg.popup?cfg.popup.filter(([k])=>p[k]!=null&&String(p[k]).trim()!=="").map(([k,lb])=>esc(lb)+": "+esc(String(p[k]))):
+  Object.entries(p).filter(([k,v])=>v!=null&&v!==""&&!["WARNA","KODE"].includes(k)).slice(0,12).map(([k,v])=>esc(k)+": "+esc(String(v)));
  const lyr=L.geoJSON(d,{pane:"ext",renderer:extRend,style:f=>({color:"#444",weight:.5,fillColor:col(f.properties),fillOpacity:cfg.opacity??.6}),
-  onEachFeature:(f,l)=>l.on("click",ev=>{const hide=["WARNA","KODE"];
-   L.popup({maxWidth:300}).setLatLng(ev.latlng).setContent("<b>"+esc(cfg.nama)+"</b><br>"+Object.entries(f.properties).filter(([k,v])=>v!=null&&v!==""&&!hide.includes(k)).slice(0,12).map(([k,v])=>esc(k)+": "+esc(String(v))).join("<br>")).openOn(map)})});
+  pointToLayer:cfg.point?((f,ll)=>L.circleMarker(ll,{pane:"extpt",renderer:ptRend,radius:9,color:"#222",weight:1.5,fillColor:col(f.properties),fillOpacity:cfg.opacity??.9})):undefined,
+  onEachFeature:(f,l)=>l.on("click",ev=>{
+   L.popup({maxWidth:300}).setLatLng(ev.latlng).setContent("<b>"+esc(cfg.nama)+"</b><br>"+popRows(f.properties).join("<br>")).openOn(map)})});
  return extState[cfg.id]={lyr,cls};
 }
 function extLegend(){
@@ -596,6 +608,7 @@ function extLegend(){
 }
 function initExt(){
  map.createPane("ext").style.zIndex=350;extRend=L.canvas({pane:"ext"});
+ map.createPane("extpt").style.zIndex=450;ptRend=L.canvas({pane:"extpt"});
  const lg=L.control({position:"bottomleft"});
  lg.onAdd=()=>{const d=L.DomUtil.create("div","legend");d.id="extLegend";d.hidden=true;d.style.maxHeight="45vh";d.style.overflow="auto";return d};lg.addTo(map);
  const box=document.getElementById("extToggles");
