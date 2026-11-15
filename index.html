@@ -257,8 +257,10 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
       <h2>Layer peta</h2>
       <fieldset>
         <legend>Peta dasar</legend>
-        <label><input type="radio" name="base" value="osm" checked> OpenStreetMap</label>
-        <label><input type="radio" name="base" value="sat"> Citra satelit</label>
+        <label><input type="radio" name="basemap" value="sat" checked> Citra satelit</label>
+        <label><input type="radio" name="basemap" value="sath"> Citra satelit + nama jalan &amp; tempat</label>
+        <label><input type="radio" name="basemap" value="osm"> Peta jalan (OpenStreetMap)</label>
+        <label><input type="radio" name="basemap" value="carto"> Peta terang (CARTO)</label>
       </fieldset>
       <fieldset>
         <legend>Kelas prioritas</legend>
@@ -342,7 +344,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
 </section>
 </main>
 
-<footer><div class="wrap"><div class="foot-logos"><img src="assets/logo-surabaya.png" alt="Pemerintah Kota Surabaya"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember"><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></div>ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar © kontributor OpenStreetMap dan Esri.</div></footer>
+<footer><div class="wrap"><div class="foot-logos"><img src="assets/logo-surabaya.png" alt="Pemerintah Kota Surabaya"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember"><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></div>ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar: citra satelit Esri World Imagery (Esri, Maxar, Earthstar Geographics, dan komunitas pengguna GIS); peta jalan © kontributor OpenStreetMap; peta terang © CARTO.</div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -430,38 +432,54 @@ function buildHome(){
 
 /* ---------- peta ---------- */
 let map, baseLayers, groupLayers={}, layerById={}, mapReady=false, activeClasses=new Set([1,2,3,4,5]);
-/* ---------- foto bidang (galeri di pop-up + lightbox) ---------- */
-const PHOTOS = {};   // diisi dari data/foto.json atau atribut "foto" pada GeoJSON
+/* ---------- foto bidang: terdeteksi otomatis dari nama berkas ----------
+   Taruh foto di folder img/bidang/ dengan nama ID13_1.jpg, ID13_2.jpg, ... (13 = ID bidang, angka kedua = urutan foto).
+   Tidak perlu skrip atau foto.json. data/foto.json hanya opsional (untuk keterangan/tanggal foto). */
+const FOTO_DIR="img/bidang/", FOTO_EXT=[".jpg",".jpeg",".png",".webp",".JPG",".JPEG",".PNG"], FOTO_MAX=8;
+const PHOTOS = {};   // opsional, dari data/foto.json
 fetch("data/foto.json").then(r=>r.ok?r.json():{}).then(j=>Object.assign(PHOTOS,j)).catch(()=>{});
-function photosOf(p){
-  const e = PHOTOS[p.ID] || PHOTOS["ID"+String(p.ID).padStart(2,"0")];
-  if(e) return {files:e.files||[], ket:e.ket||[], tgl:e.tgl||""};
-  if(Array.isArray(p.foto)&&p.foto.length) return {files:p.foto, ket:[], tgl:p.tgl_foto||""};
+const fotoCache=new Map();
+function tryLoad(u){return new Promise(r=>{const im=new Image();const t=setTimeout(()=>r(false),8000);im.onload=()=>{clearTimeout(t);r(true)};im.onerror=()=>{clearTimeout(t);r(false)};im.src=u})}
+/* sesuaikan ukuran/posisi pop-up TANPA membuat ulang isinya (popup.update() akan menghapus galeri) */
+function refit(pop){ if(!pop||!pop._map) return; try{pop._updateLayout();pop._updatePosition();pop._adjustPan();}catch(e){} }
+async function findFoto(id,k,hint){
+  const names=[...new Set(["ID"+String(id).padStart(2,"0")+"_"+k,"ID"+id+"_"+k])];
+  const exts=hint?[hint,...FOTO_EXT.filter(e=>e!==hint)]:FOTO_EXT;
+  for(const n of names) for(const e of exts){ const u=FOTO_DIR+n+e; if(await tryLoad(u)) return {u,e}; }
   return null;
 }
+function discoverFoto(id){
+  if(!fotoCache.has(id)) fotoCache.set(id,(async()=>{const out=[];let hint=null;
+    for(let k=1;k<=FOTO_MAX;k++){const f=await findFoto(id,k,hint);if(!f)break;out.push(f.u);hint=f.e}
+    return out})());
+  return fotoCache.get(id);
+}
+function fotoMeta(p){ return PHOTOS[p.ID]||PHOTOS["ID"+String(p.ID).padStart(2,"0")]||null; }
 function tglID(t){ if(!t) return ""; const d=new Date(t); return isNaN(d)?esc(t):d.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}); }
 function capOf(ph,i){ const k=ph.ket[i]?esc(ph.ket[i]):"", t=ph.tgl?"Foto: "+tglID(ph.tgl):""; return [k,t].filter(Boolean).join(" · "); }
-function galleryHTML(p){
-  const ph=photosOf(p);
-  if(!ph||!ph.files.length) return `<div class="gal-empty">Foto bidang belum tersedia</div>`;
-  const n=ph.files.length;
-  return `<div class="gal" data-id="${p.ID}" data-i="0">
-    <img class="gal-img" src="${esc(ph.files[0])}" alt="Foto kondisi eksisting ${esc(p.JENIS)}, ${titleCase(p.KELURAHAN)}" loading="lazy" tabindex="0" role="button" title="Klik untuk memperbesar">
-    ${n>1?`<button type="button" class="gal-nav gal-prev" aria-label="Foto sebelumnya">‹</button><button type="button" class="gal-nav gal-next" aria-label="Foto berikutnya">›</button>`:""}
-    <span class="gal-count">1/${n}</span></div>
-    <div class="gal-cap">${capOf(ph,0)}</div>`;
-}
-function wireGallery(root){
-  root.querySelectorAll(".gal").forEach(g=>{
-    const f=feats.find(x=>P(x).ID==g.dataset.id); if(!f) return;
-    const ph=photosOf(P(f)), n=ph.files.length, img=g.querySelector(".gal-img");
-    const show=i=>{ i=(i+n)%n; g.dataset.i=i; img.src=ph.files[i]; g.querySelector(".gal-count").textContent=(i+1)+"/"+n; g.nextElementSibling.innerHTML=capOf(ph,i); };
-    const p=g.querySelector(".gal-prev"), nx=g.querySelector(".gal-next");
-    if(p) p.onclick=e=>{e.stopPropagation();show(+g.dataset.i-1)};
-    if(nx) nx.onclick=e=>{e.stopPropagation();show(+g.dataset.i+1)};
-    const open=()=>openLightbox(ph,+g.dataset.i,P(f),i=>show(i));
-    img.onclick=open; img.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
-    img.onerror=()=>{g.outerHTML='<div class="gal-empty">Foto tidak dapat dimuat</div>'};
+function galleryHTML(p){ return `<div class="gal-slot" data-id="${p.ID}"><div class="gal-empty">Memuat foto…</div></div>`; }
+function wireGallery(root,popup){
+  root.querySelectorAll(".gal-slot").forEach(slot=>{
+    const id=+slot.dataset.id, f=feats.find(x=>P(x).ID==id); if(!f) return;
+    const p=P(f), meta=fotoMeta(p);
+    (meta&&meta.files&&meta.files.length?Promise.resolve(meta.files):discoverFoto(id)).catch(()=>[]).then(files=>{
+      if(!slot.isConnected) return;
+      if(!files.length){ slot.innerHTML='<div class="gal-empty">Foto bidang belum tersedia</div>'; refit(popup); return; }
+      const ph={files,ket:(meta&&meta.ket)||[],tgl:(meta&&meta.tgl)||""}, n=files.length;
+      slot.innerHTML=`<div class="gal" data-i="0">
+        <img class="gal-img" src="${esc(files[0])}" alt="Foto kondisi eksisting ${esc(p.JENIS)}, ${titleCase(p.KELURAHAN)}" tabindex="0" role="button" title="Klik untuk memperbesar">
+        ${n>1?`<button type="button" class="gal-nav gal-prev" aria-label="Foto sebelumnya">‹</button><button type="button" class="gal-nav gal-next" aria-label="Foto berikutnya">›</button>`:""}
+        <span class="gal-count">1/${n}</span></div><div class="gal-cap">${capOf(ph,0)}</div>`;
+      const g=slot.querySelector(".gal"), img=g.querySelector(".gal-img");
+      const show=i=>{ i=(i+n)%n; g.dataset.i=i; img.src=ph.files[i]; g.querySelector(".gal-count").textContent=(i+1)+"/"+n; g.nextElementSibling.innerHTML=capOf(ph,i); };
+      const a=g.querySelector(".gal-prev"), b=g.querySelector(".gal-next");
+      if(a) a.onclick=e=>{e.stopPropagation();show(+g.dataset.i-1)};
+      if(b) b.onclick=e=>{e.stopPropagation();show(+g.dataset.i+1)};
+      const open=()=>openLightbox(ph,+g.dataset.i,p,i=>show(i));
+      img.onclick=open; img.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}};
+      img.onerror=()=>{slot.innerHTML='<div class="gal-empty">Foto tidak dapat dimuat</div>'};
+      refit(popup);
+    });
   });
 }
 let lbEl=null;
@@ -504,13 +522,21 @@ function initMap(){
   if(mapReady) return; mapReady=true;
   map = L.map("map",{zoomControl:true});
   const mapEl=document.getElementById("map");
-  map.on("popupopen",e=>{mapEl.classList.add("popup-open");wireGallery(e.popup.getElement())});
+  map.on("popupopen",e=>{mapEl.classList.add("popup-open");wireGallery(e.popup.getElement(),e.popup)});
   map.on("popupclose",()=>mapEl.classList.remove("popup-open"));
   baseLayers = {
-    osm:L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© OpenStreetMap"}),
-    sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Esri World Imagery"})
+    sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"})
   };
-  baseLayers.osm.addTo(map);
+  baseLayers.ref=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Labels © Esri"});
+  baseLayers.osm=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© kontributor OpenStreetMap"});
+  baseLayers.carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:20,attribution:"© OpenStreetMap, © CARTO"});
+  const BASE_SET={sat:["sat"],sath:["sat","ref"],osm:["osm"],carto:["carto"]};
+  function setBase(k){
+    Object.values(baseLayers).forEach(l=>{if(map.hasLayer(l)) map.removeLayer(l)});
+    BASE_SET[k].forEach(n=>baseLayers[n].addTo(map));
+  }
+  setBase("sat");
+  document.querySelectorAll('input[name="basemap"]').forEach(r=>r.onchange=()=>{if(r.checked) setBase(r.value)});
   [1,2,3,4,5].forEach(k=>groupLayers[k]=L.layerGroup().addTo(map));
   const all=[];
   feats.forEach(f=>{
@@ -534,8 +560,6 @@ function initMap(){
     d.innerHTML="<b>Kelas prioritas</b><br>"+[5,4,3,2,1].map(k=>`<i class="dot" style="background:${CLASSES[k].color}"></i>${CLASSES[k].label}`).join("<br>");return d};
   legend.addTo(map);
 
-  document.querySelectorAll('input[name="base"]').forEach(r=>r.onchange=()=>{
-    Object.values(baseLayers).forEach(l=>map.removeLayer(l)); baseLayers[r.value].addTo(map); baseLayers[r.value].bringToBack();});
   document.getElementById("classToggles").innerHTML=[5,4,3,2,1].map(k=>
     `<label><input type="checkbox" data-k="${k}" checked><i class="dot" style="background:${CLASSES[k].color}"></i>${CLASSES[k].label}</label>`).join("");
   document.querySelectorAll("#classToggles input").forEach(cb=>cb.onchange=()=>{
@@ -563,19 +587,10 @@ const EXT_LAYERS=[
  {id:"guna",nama:"Peta penggunaan lahan",file:"data/PL.geojson",field:"Jenis",opacity:.7,
   classes:[{v:"Rumah",c:"#ff7d7d",l:"Rumah"},{v:"Perdagangan",c:"#d6479a",l:"Perdagangan"},{v:"Jalan",c:"#ea1e1d",l:"Jalan"},{v:"Saluran",c:"#00f0fa",l:"Saluran"},{v:"Sungai",c:"#99d9f9",l:"Sungai"},{v:"Perairan",c:"#bfeaff",l:"Perairan"},{v:"KH",c:"#4ce600",l:"KH"},{v:"PB, PS, RTH",c:"#a8d08d",l:"PB, PS, RTH"},{v:"Kantor Pemerintah",c:"#ffff00",l:"Kantor Pemerintah"},{v:"Aneka Industri",c:"#85629b",l:"Aneka Industri"},{v:"Sarana Pelayanan umum",c:"#ff8c1a",l:"Sarana Pelayanan umum"}]},
  {id:"legal",nama:"Peta status legalitas tanah aset",file:"data/Legalitas Tanah Aset.geojson",field:"STATUS",opacity:.85,
-  classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]},
- {id:"skorakses",nama:"Skor aksesibilitas (titik per bidang aset)",file:"data/SkorAkses.geojson",point:true,field:"Skor_1",opacity:.95,
-  popup:[["Name","Aset"],["Skor_1","Skor aksesibilitas"],["Class","Keterangan"]],
-  classes:[{v:5,c:"#1a9850",l:"Skor 5: < 200 m"},{v:4,c:"#91cf60",l:"Skor 4: 200–499 m"},{v:3,c:"#ffffbf",l:"Skor 3: 500–799 m"},{v:2,c:"#fc8d59",l:"Skor 2: 800–1.000 m"},{v:1,c:"#d73027",l:"Skor 1: > 1.000 m / tanpa akses"}]},
- {id:"skorpl",nama:"Skor penggunaan lahan (titik per bidang aset)",file:"data/SkorPL.geojson",point:true,field:"PL_SKOR",opacity:.95,
-  popup:[["Name","Aset"],["Jenis","Penggunaan lahan"],["PL_SKOR","Skor penggunaan lahan"],["PL_KET","Keterangan"]],
-  classes:[{v:5,c:"#1a9850",l:"Skor 5: produktif sesuai potensi ekonomi"},{v:3,c:"#f2b134",l:"Skor 3: fungsi publik/sosial tanpa nilai ekonomi"},{v:1,c:"#d73027",l:"Skor 1: tidak dimanfaatkan secara ekonomi"}]},
- {id:"skorrdtr",nama:"Skor kesesuaian RDTR (titik per bidang aset)",file:"data/SkorRDTR.geojson",point:true,field:"SKOR_V5",opacity:.95,
-  popup:[["Name","Aset"],["KELAS","Zona RDTR"],["SKOR_V5","Skor kesesuaian tata ruang"],["KET_V5","Keterangan"]],
-  classes:[{v:5,c:"#1a9850",l:"Skor 5: produktif sesuai potensi ekonomi"},{v:3,c:"#f2b134",l:"Skor 3: fungsi publik tanpa nilai ekonomi"},{v:1,c:"#d73027",l:"Skor 1: tidak digunakan / tidak produktif"}]}
+  classes:[{v:"Bidang aset terdaftar (BHUMI), skor legalitas 5",c:"#1b7f4b",l:"Terdaftar di BHUMI (skor legalitas 5)"}]}
 ];
 const EXT_PAL=["#4e79a7","#f28e2b","#e15759","#76b7b2","#59a14f","#edc948","#b07aa1","#ff9da7","#9c755f","#bab0ac"];
-const extState={};let extRend,ptRend;
+const extState={};let extRend;
 function utmInv(x,y){const a=6378137,e2=0.00669437999014,ep=e2/(1-e2),k=0.9996;x-=5e5;y-=1e7;
  const mu=(y/k)/(a*(1-e2/4-3*e2*e2/64-5*e2**3/256)),s1=Math.sqrt(1-e2),e1=(1-s1)/(1+s1);
  const p=mu+(3*e1/2-27*e1**3/32)*Math.sin(2*mu)+(21*e1*e1/16-55*e1**4/32)*Math.sin(4*mu)+151*e1**3/96*Math.sin(6*mu)+1097*e1**4/512*Math.sin(8*mu);
@@ -593,12 +608,9 @@ async function loadExt(cfg){
  if(!cls&&cfg.colorField){const m=new Map();d.features.forEach(f=>m.set(f.properties[cfg.field],f.properties[cfg.colorField]));cls=[...m].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))).map(([v,c])=>({v,c,l:String(v)}));}
  cls=cls||[];
  const col=p=>{const k=cls.find(x=>x.v==p[cfg.field]);return k?k.c:"#9aa5b1"};
- const popRows=p=>cfg.popup?cfg.popup.filter(([k])=>p[k]!=null&&String(p[k]).trim()!=="").map(([k,lb])=>esc(lb)+": "+esc(String(p[k]))):
-  Object.entries(p).filter(([k,v])=>v!=null&&v!==""&&!["WARNA","KODE"].includes(k)).slice(0,12).map(([k,v])=>esc(k)+": "+esc(String(v)));
  const lyr=L.geoJSON(d,{pane:"ext",renderer:extRend,style:f=>({color:"#444",weight:.5,fillColor:col(f.properties),fillOpacity:cfg.opacity??.6}),
-  pointToLayer:cfg.point?((f,ll)=>L.circleMarker(ll,{pane:"extpt",renderer:ptRend,radius:9,color:"#222",weight:1.5,fillColor:col(f.properties),fillOpacity:cfg.opacity??.9})):undefined,
-  onEachFeature:(f,l)=>l.on("click",ev=>{
-   L.popup({maxWidth:300}).setLatLng(ev.latlng).setContent("<b>"+esc(cfg.nama)+"</b><br>"+popRows(f.properties).join("<br>")).openOn(map)})});
+  onEachFeature:(f,l)=>l.on("click",ev=>{const hide=["WARNA","KODE"];
+   L.popup({maxWidth:300}).setLatLng(ev.latlng).setContent("<b>"+esc(cfg.nama)+"</b><br>"+Object.entries(f.properties).filter(([k,v])=>v!=null&&v!==""&&!hide.includes(k)).slice(0,12).map(([k,v])=>esc(k)+": "+esc(String(v))).join("<br>")).openOn(map)})});
  return extState[cfg.id]={lyr,cls};
 }
 function extLegend(){
@@ -608,7 +620,6 @@ function extLegend(){
 }
 function initExt(){
  map.createPane("ext").style.zIndex=350;extRend=L.canvas({pane:"ext"});
- map.createPane("extpt").style.zIndex=450;ptRend=L.canvas({pane:"extpt"});
  const lg=L.control({position:"bottomleft"});
  lg.onAdd=()=>{const d=L.DomUtil.create("div","legend");d.id="extLegend";d.hidden=true;d.style.maxHeight="45vh";d.style.overflow="auto";return d};lg.addTo(map);
  const box=document.getElementById("extToggles");
