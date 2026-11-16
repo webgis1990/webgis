@@ -408,7 +408,7 @@ function tileSVG(f){
 }
 function buildHome(){
   document.getElementById("tiles").innerHTML = feats.map(f=>
-    `<button class="tile" data-id="${P(f).ID}" aria-label="Peringkat ${P(f).RANGKING}, ${esc(P(f).JENIS)}, ${CLASSES[P(f).KELAS].label}">${tileSVG(f)}<span class="rk">#${P(f).RANGKING}</span></button>`).join("");
+    `<button class="tile" data-id="${P(f).ID}" aria-label="Peringkat ${P(f).RANGKING}, ID bidang ${P(f).ID}, ${esc(P(f).JENIS)}, ${CLASSES[P(f).KELAS].label}">${tileSVG(f)}<span class="rk">#${P(f).RANGKING}</span></button>`).join("");
   document.querySelectorAll(".tile").forEach(b=>b.onclick=()=>{location.hash="#/peta/"+b.dataset.id});
 
   const counts={};feats.forEach(f=>counts[P(f).KELAS]=(counts[P(f).KELAS]||0)+1);
@@ -509,7 +509,7 @@ function popupHTML(f){
     const sk=skorOf(p,c.k), w=p["BOBOT_"+c.k];
     return `<tr><td><b style="font-weight:600">${c.name}</b><br><span style="color:#4A5E73">${esc(detailOf(p,c.k))}</span></td><td>${sk==null?"–":sk+"/5"}<br><span style="font-weight:400;color:#4A5E73">${fmt(w*100,1)}%</span></td></tr>`}).join("");
   return `<div class="pop">
-    ${pill(p.KELAS)} <span style="font-size:13px;color:#4A5E73">Peringkat ${p.RANGKING} dari ${feats.length}</span>
+    ${pill(p.KELAS)} <span style="font-size:13px;color:#4A5E73">Peringkat ${p.RANGKING} dari ${feats.length} · <b>ID bidang ${p.ID}</b></span>
     <h3>${esc(p.JENIS)}</h3>
     <div class="loc">${titleCase(p.KELURAHAN)}, ${titleCase(p.KECAMATAN)} · ${fmt(p.LUAS_M2,1)} m²</div>
     ${galleryHTML(p)}
@@ -569,7 +569,7 @@ function initMap(){
       e.target.checked?g.addLayer(l.pin):g.removeLayer(l.pin);});};
   document.getElementById("assetlist").innerHTML=feats.map(f=>{const p=P(f);return `
     <li><button data-id="${p.ID}"><span class="n k${p.KELAS}">${p.RANGKING}</span>
-    <span class="t">${esc(jenisShort(p.JENIS))}<span>${titleCase(p.KELURAHAN)} · ${fmt(p.SKOR_AKHIR,2)}</span></span></button></li>`}).join("");
+    <span class="t">${esc(jenisShort(p.JENIS))}<span>${titleCase(p.KELURAHAN)} · ${fmt(p.SKOR_AKHIR,2)} · ID ${p.ID}</span></span></button></li>`}).join("");
   document.querySelectorAll("#assetlist button").forEach(b=>b.onclick=()=>focusAsset(+b.dataset.id));
   initExt();
 }
@@ -650,13 +650,13 @@ function buildTable(){
     [5,4,3,2,1].map(k=>`<button class="chip" aria-pressed="${filterK===k}" data-k="${k}">${CLASSES[k].label} (${feats.filter(f=>P(f).KELAS===k).length})</button>`).join("");
   document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{filterK=c.dataset.k==="all"?null:+c.dataset.k;buildTable()});
   const cols=[
-    ["RANGKING","Peringkat",1],["JENIS","Jenis aset"],["KELURAHAN","Kelurahan"],["KECAMATAN","Kecamatan"],
+    ["RANGKING","Peringkat",1],["ID","ID bidang",1],["JENIS","Jenis aset"],["KELURAHAN","Kelurahan"],["KECAMATAN","Kecamatan"],
     ["LUAS_M2","Luas (m²)",1],["SKOR_AKHIR","Skor",1],["KELAS","Kelas"]];
   let rows=feats.filter(f=>filterK===null||P(f).KELAS===filterK);
   rows.sort((a,b)=>{const x=P(a)[sortKey],y=P(b)[sortKey];return (typeof x==="string"?x.localeCompare(y):x-y)*sortDir});
   const head=cols.map(([k,l,n])=>`<th class="${n?"num":""}" aria-sort="${sortKey===k?(sortDir>0?"ascending":"descending"):"none"}"><button data-k="${k}">${l}${sortKey===k?(sortDir>0?" ▲":" ▼"):""}</button></th>`).join("")+"<th>Rekomendasi</th><th></th>";
   const body=rows.map(f=>{const p=P(f);return `<tr>
-    <td class="num">${p.RANGKING}</td><td>${esc(p.JENIS)}</td><td>${titleCase(p.KELURAHAN)}</td><td>${titleCase(p.KECAMATAN)}</td>
+    <td class="num">${p.RANGKING}</td><td class="num">${p.ID}</td><td>${esc(p.JENIS)}</td><td>${titleCase(p.KELURAHAN)}</td><td>${titleCase(p.KECAMATAN)}</td>
     <td class="num">${fmt(p.LUAS_M2,1)}</td><td class="num">${fmt(p.SKOR_AKHIR,2)}</td><td>${pill(p.KELAS)}</td>
     <td>Prioritas ${CLASSES[p.KELAS].group.toLowerCase()}</td>
     <td><button class="linkbtn" data-id="${p.ID}">Lihat di peta</button></td></tr>`}).join("");
