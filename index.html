@@ -260,7 +260,6 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
         <label><input type="radio" name="basemap" value="sat" checked> Citra satelit</label>
         <label><input type="radio" name="basemap" value="sath"> Citra satelit + nama jalan &amp; tempat</label>
         <label><input type="radio" name="basemap" value="osm"> Peta jalan (OpenStreetMap)</label>
-        <label><input type="radio" name="basemap" value="carto"> Peta terang (CARTO)</label>
       </fieldset>
       <fieldset>
         <legend>Kelas prioritas</legend>
@@ -344,7 +343,7 @@ footer{background:#fff;border-top:1px solid var(--line);padding:24px 0;color:var
 </section>
 </main>
 
-<footer><div class="wrap"><div class="foot-logos"><img src="assets/logo-surabaya.png" alt="Pemerintah Kota Surabaya"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember"><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></div>ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar: citra satelit Esri World Imagery (Esri, Maxar, Earthstar Geographics, dan komunitas pengguna GIS); peta jalan © kontributor OpenStreetMap; peta terang © CARTO.</div></footer>
+<footer><div class="wrap"><div class="foot-logos"><img src="assets/logo-surabaya.png" alt="Pemerintah Kota Surabaya"><img src="assets/logo-its.png" alt="Institut Teknologi Sepuluh Nopember"><img src="assets/logo-geomatika.png" alt="Departemen Teknik Geomatika ITS"></div>ASTRA – Aset Tanah Surabaya, Sistem Informasi Prioritas Pengelolaan Aset Daerah. Penelitian tugas akhir, Departemen Teknik Geomatika ITS. Peta dasar: citra satelit Esri World Imagery (Esri, Maxar, Earthstar Geographics, dan komunitas pengguna GIS); peta jalan © kontributor OpenStreetMap.</div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
@@ -527,10 +526,10 @@ function initMap(){
   baseLayers = {
     sat:L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"})
   };
+  baseLayers.trans=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Roads © Esri"});
   baseLayers.ref=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Labels © Esri"});
   baseLayers.osm=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© kontributor OpenStreetMap"});
-  baseLayers.carto=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:20,attribution:"© OpenStreetMap, © CARTO"});
-  const BASE_SET={sat:["sat"],sath:["sat","ref"],osm:["osm"],carto:["carto"]};
+  const BASE_SET={sat:["sat"],sath:["sat","trans","ref"],osm:["osm"]};
   function setBase(k){
     Object.values(baseLayers).forEach(l=>{if(map.hasLayer(l)) map.removeLayer(l)});
     BASE_SET[k].forEach(n=>baseLayers[n].addTo(map));
